@@ -11,5 +11,3 @@ void addchild(node* p, node* c){
         p->child = c;
     }
 }
-
-int main() {}
