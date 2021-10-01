@@ -9,4 +9,4 @@ BISON = bison
 run: .lex .syntax
 	$(CC) syntax.tab.c -lfl -ly -o a.out
 clean:
-	@rm -f syntax.tab.h lex.yy.c syntax.tab.c *.out
+	@rm -f syntax.tab.h lex.yy.c syntax.tab.c *.out syntax.output
