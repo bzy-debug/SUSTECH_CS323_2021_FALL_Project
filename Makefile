@@ -7,6 +7,6 @@ BISON = bison
 .syntax: syntax.y
 	$(BISON) -d -t -v syntax.y
 run: .lex .syntax
-	$(CC) node.c syntax.tab.c -lfl -ly -o a.out
+	$(CC) -g node.c syntax.tab.c -lfl -ly -o tst
 clean:
 	@rm -f syntax.tab.h lex.yy.c syntax.tab.c *.out syntax.output

@@ -20,10 +20,12 @@ typedef union NODE_VAL
 typedef struct NODE
 {
     nodeType node_type;
-    int isempty; // 0 empty, 1 empty. for nterms
+    int isempty; // 0 not empty, 1 empty. for nterms
     nodeVal val;
     struct NODE* child;
     struct NODE* sibling;
 } node;
 
-void addchild(node* , node* );
+void addchild(node* ,int , ... );
+
+void print_tree(node*, int);

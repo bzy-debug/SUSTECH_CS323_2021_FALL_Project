@@ -1,10 +1,15 @@
 %{
     #include"lex.yy.c"
     void yyerror(const char*);
+    node* root;
+    node* test;
 %}
-%token INT FLOAT CHAR ID TYPE STRUCT IF ELSE WHILE RETURN
-%token INVALID_TOKEN INVALID_ID
-%token DOT SEMI COMMA ASSIGN LT LE GT GE NE EQ PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC
+%union {
+    node* type_node;
+}
+%token<type_node> INT FLOAT CHAR ID TYPE STRUCT IF ELSE WHILE RETURN
+%token<type_node> INVALID_TOKEN INVALID_ID
+%token<type_node> DOT SEMI COMMA ASSIGN LT LE GT GE NE EQ PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC
 %right ASSIGN
 %left OR
 %left AND
@@ -16,129 +21,451 @@
 %nonassoc LOWERELSE
 %nonassoc ELSE
 %left INVALID_TOKEN //TODO
+%type<type_node> Program ExtDefList ExtDef ExtDecList
+%type<type_node> Specifier StructSpecifier
+%type<type_node> VarDec FunDec VarList ParamDec
+%type<type_node> CompSt StmtList Stmt
+%type<type_node> DefList Def DecList Dec
+%type<type_node> Exp Args
 %%
 /* high-level definition*/
 Program:
     ExtDefList
+    {
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Program";
+        addchild($$, 1, $1);
+        root = $$;
+    }
     ;
 
 ExtDefList:
-    ExtDef ExtDefList
-    | %empty
+    ExtDef ExtDefList{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "ExtDefList";
+        addchild($$, 2, $1, $2);
+    }
+    | %empty {
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "ExtDefList";
+        $$->child = NULL;
+        $$->isempty = 1;
+    }
     ;
 
 ExtDef:
-    Specifier ExtDecList SEMI
-    | Specifier SEMI
-    | Specifier FunDec CompSt
+    Specifier ExtDecList SEMI{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "ExtDef";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Specifier SEMI{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "ExtDef";
+        addchild($$, 2, $1, $2);
+    }
+    | Specifier FunDec CompSt{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "ExtDef";
+        addchild($$, 3, $1, $2, $3);
+    }
     ;
 
-ExtDecList: VarDec
-    | VarDec COMMA ExtDecList
+ExtDecList: 
+    VarDec{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "ExtDecList";
+        addchild($$, 1, $1);
+    }
+    | VarDec COMMA ExtDecList{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "ExtDecList";
+        addchild($$, 3, $1, $2, $3);
+    }
     ;
 
 /* specifier */
-Specifier: TYPE
-    | StructSpecifier
+Specifier: 
+    TYPE {
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Specifier";
+        addchild($$, 1, $1);
+    }
+    | StructSpecifier{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Specifier";
+        addchild($$, 1, $1);
+    }
     ;
 
-StructSpecifier: STRUCT ID LC DefList RC
-    | STRUCT ID
+StructSpecifier: STRUCT ID LC DefList RC{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "StructSpecifier";
+        addchild($$, 5, $1, $2, $3, $4, $5);
+    }
+    | STRUCT ID{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "StructSpecifier";
+        addchild($$, 2, $1, $2);
+    }
     | STRUCT INVALID_ID LC DefList RC
     | STRUCT INVALID_ID
     ;
 
 /* declarator */
-VarDec: ID
-    | VarDec LB INT RB
+VarDec: ID{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "VarDec";
+        addchild($$, 1, $1);
+    }
+    | VarDec LB INT RB{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "VarDec";
+        addchild($$, 4, $1, $2, $3, $4);
+    }
     | INVALID_ID
     ;
 
-FunDec: ID LP VarList RP
-    | ID LP RP
+FunDec: ID LP VarList RP{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "FunDec";
+        addchild($$, 4, $1, $2, $3, $4);
+    }
+    | ID LP RP{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "FunDec";
+        node* test = $$;
+        addchild($$, 3, $1, $2, $3);
+
+    }
     | ID LP VarList error { printf("missing closing parenthesis\n"); }
     | ID LP error { printf("missing closing parenthesis\n");}
     | INVALID_ID LP VarList RP
     | INVALID_ID LP RP
     ;
 
-VarList: ParamDec COMMA VarList
-    | ParamDec
+VarList: ParamDec COMMA VarList{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "VarList";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | ParamDec{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "VarList";
+        addchild($$, 1, $1);
+    }
     ;
 
-ParamDec: Specifier VarDec
+ParamDec: Specifier VarDec{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "ParamDec";
+        addchild($$, 2, $1, $2);
+    }
     ;
 
 /* Statement */
-CompSt: LC DefList StmtList RC
+CompSt: LC DefList StmtList RC{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "CompSt";
+        addchild($$, 4, $1, $2, $3, $4);
+    }
     ;
 
-StmtList: Stmt StmtList
-    | %empty
+StmtList: Stmt StmtList{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "StmtList";
+        addchild($$, 2, $1, $2);
+    }
+    | %empty {
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "StmtList";
+        $$->child = NULL;
+        $$->isempty = 1;
+    }
     ;
 
-Stmt: Exp SEMI
-    | CompSt
-    | RETURN Exp SEMI
+Stmt: Exp SEMI{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Stmt";
+        addchild($$, 2, $1, $2);
+    }
+    | CompSt{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Stmt";
+        addchild($$, 1, $1);
+    }
+    | RETURN Exp SEMI{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Stmt";
+        addchild($$, 3, $1, $2, $3);
+    }
     | RETURN Exp error { printf("missing colon\n"); }
-    | IF LP Exp RP Stmt %prec LOWERELSE
-    | IF LP Exp RP Stmt ELSE Stmt
-    | WHILE LP Exp RP Stmt
+    | IF LP Exp RP Stmt %prec LOWERELSE{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Stmt";
+        addchild($$, 5, $1, $2, $3, $4, $5);
+    }
+    | IF LP Exp RP Stmt ELSE Stmt{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Stmt";
+        addchild($$, 7, $1, $2, $3, $4, $5, $6, $7);
+    }
+    | WHILE LP Exp RP Stmt{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Stmt";
+        addchild($$, 5, $1, $2, $3, $4, $5);
+    }
     ;
 /* local definition */
 
-DefList: Def DefList
-    | %empty
+DefList: Def DefList{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "DefList";
+        addchild($$, 2, $1, $2);
+    }
+    | %empty {
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "DefList";
+        $$->child = NULL;
+        $$->isempty = 1;
+    }
     ;
-Def: Specifier DecList SEMI
+Def: Specifier DecList SEMI{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Def";
+        addchild($$, 3, $1, $2, $3);
+    }
     | Specifier DecList error {printf("missing colon\n"); }
     | error DecList SEMI {printf("missing specifier\n"); }
     ;
 
-DecList: Dec
-    | Dec COMMA DecList
+DecList: Dec{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "DecList";
+        addchild($$, 1, $1);
+    }
+    | Dec COMMA DecList{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "DecList";
+        addchild($$, 3, $1, $2, $3);
+    }
     ;
 
-Dec: VarDec
-    | VarDec ASSIGN Exp
+Dec: VarDec{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Dec";
+        addchild($$, 1, $1);
+    }
+    | VarDec ASSIGN Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Dec";
+        addchild($$, 3, $1, $2, $3);
+    }
     ;
 
 /* Expression */
-Exp: Exp ASSIGN Exp
-    | Exp AND Exp
-    | Exp OR Exp
-    | Exp LT Exp
-    | Exp GT Exp
-    | Exp GE Exp
-    | Exp NE Exp
-    | Exp EQ Exp
-    | Exp PLUS Exp
-    | Exp MINUS Exp
-    | Exp MUL Exp
-    | Exp DIV Exp
-    | LP Exp RP
-    | MINUS Exp
-    | NOT Exp
-    | ID LP Args RP
-    | ID LP RP
+Exp: Exp ASSIGN Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp AND Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp OR Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp LT Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp LE Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp GT Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp GE Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp NE Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp EQ Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp PLUS Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp MINUS Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp MUL Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp DIV Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | LP Exp RP{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | MINUS Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 2, $1, $2);
+    }
+    | NOT Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 2, $1, $2);
+    }
+    | ID LP Args RP{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 4, $1, $2, $3, $4);
+    }
+    | ID LP RP{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
     | INVALID_ID LP Args RP
     | INVALID_ID LP RP
     | ID LP Args error{ printf("missing closing parenthesis\n");} 
     | ID LP error { printf("missing closing parenthesis\n");}
     | INVALID_ID LP Args error{ printf("missing closing parenthesis\n");}
     | INVALID_ID LP error{ printf("missing closing parenthesis\n");}
-    | Exp LB Exp RB
-    | Exp DOT ID
-    | ID
+    | Exp LB Exp RB{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 4, $1, $2, $3, $4);
+    }
+    | Exp DOT ID{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | ID{
+        $$ = malloc(sizeof(node));
+        test = $1;
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 1, $1);
+    }
     | INVALID_ID
-    | INT
-    | FLOAT
-    | CHAR
+    | INT{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 1, $1);
+    }
+    | FLOAT{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 1, $1);
+    }
+    | CHAR{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 1, $1);
+    }
     | INVALID_TOKEN
     | Exp INVALID_TOKEN Exp 
     ;
-Args: Exp COMMA Args
-    | Exp
+Args: Exp COMMA Args{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 3, $1, $2, $3);
+    }
+    | Exp{
+        $$ = malloc(sizeof(node));
+        $$->node_type = nterm;
+        $$->val.ntermval = "Exp";
+        addchild($$, 1, $1);
+    }
     ;
 %%
 int main(int argc, char**argv) {
@@ -153,5 +480,6 @@ int main(int argc, char**argv) {
     // yydebug = 1;
     yyrestart(f);
     yyparse();
+    print_tree(root, 0);
     return 0;
 }

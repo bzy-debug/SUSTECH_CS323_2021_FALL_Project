@@ -1,4 +1,5 @@
 %{
+    #include<string.h>
     #include"node.h"
     #include"syntax.tab.h"
 %}
@@ -19,13 +20,30 @@ id [_a-zA-Z][_a-zA-Z0-9]*
 wrong_id [0-9]+[_a-zA-Z]+[0-9]*
 %%
 
-int|float|char { 
+int { 
     yylval.type_node = malloc(sizeof(node));
     yylval.type_node->node_type = eTYPE;
-    yylval.type_node->val.typeval = yytext;
-    printf("TYPE %s\n", yytext); 
+    yylval.type_node->val.typeval = "int";
+    printf("TYPE int\n"); 
     return TYPE;
 }
+
+float {
+    yylval.type_node = malloc(sizeof(node));
+    yylval.type_node->node_type = eTYPE;
+    yylval.type_node->val.typeval = "float";
+    printf("TYPE float\n"); 
+    return TYPE;
+}
+
+char {
+    yylval.type_node = malloc(sizeof(node));
+    yylval.type_node->node_type = eTYPE;
+    yylval.type_node->val.typeval = "char";
+    printf("TYPE char\n"); 
+    return TYPE;
+}
+
 struct { 
     yylval.type_node = malloc(sizeof(node));
     yylval.type_node->node_type = eSTRUCT;
@@ -224,8 +242,14 @@ return {
 {id} { 
     yylval.type_node = malloc(sizeof(node));
     yylval.type_node->node_type = eID;
-    yylval.type_node->val.idval = yytext;
-    printf("ID %s\n", yytext); return ID; }
+    int l = strlen(yytext);
+    yylval.type_node->val.idval = malloc(sizeof(char)*l);
+    for(int i=0; i<l; i++)
+        yylval.type_node->val.idval[i] = yytext[i];
+    yylval.type_node->val.idval[l] = '\0';
+    printf("ID %s\n", yytext); 
+    return ID; 
+}
 
 {wrong_id} {
     printf("Error type A at Line %d: Invalid Id: \'%s\'\n",
