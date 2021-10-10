@@ -273,6 +273,29 @@ return {
     return INVALID_ID;
 }
 
+"//" {
+    char c = input();
+    while (c != '\n') c = input();
+}
+
+"/*" {
+    int c;
+    for( ; ; ){
+        while( (c = input()) != '*' && c != EOF)
+            ;
+        if ( c == '*' ){
+            while ( (c = input()) == '*' )
+                ;
+            if ( c == '/')
+                break;
+        }
+        if ( c == EOF ){
+            perror("EOF in comment");
+            break;
+        }
+    }
+}
+
 \n { yycolno = 1; }
 [\t\r ]+ {}
 . {
