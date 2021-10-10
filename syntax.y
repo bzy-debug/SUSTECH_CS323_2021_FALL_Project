@@ -80,6 +80,7 @@ ExtDef:
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
     }
+    | error FunDec CompSt { printf("%d: Missing specifier\n", @$); }
     ;
 
 ExtDecList: 
@@ -170,8 +171,8 @@ FunDec: ID LP VarList RP{
         addchild($$, 3, $1, $2, $3);
 
     }
-    | ID LP VarList error { printf("Missing closing parenthesis ')'\n"); iserror = 1;}
-    | ID LP error { printf("Missing closing parenthesis ')'\n"); iserror = 1;}
+    | ID LP VarList error { printf("%d: Missing closing parenthesis ')'\n", @$); }
+    | ID LP error { printf("%d: Missing closing parenthesis ')'\n", @$); }
     | INVALID_ID LP VarList RP
     | INVALID_ID LP RP
     ;
@@ -249,7 +250,7 @@ Stmt: Exp SEMI{
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
     }
-    | RETURN Exp error { printf("Missing semicolon ';'\n"); iserror = 1;}
+    | RETURN Exp error { printf("%d: Missing semicolon ';'\n", @$); }
     | IF LP Exp RP Stmt %prec LOWERELSE{
         $$ = malloc(sizeof(node));
         $$->node_type = nterm;
@@ -296,8 +297,8 @@ Def: Specifier DecList SEMI{
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
     }
-    | Specifier DecList error {printf("Missing semicolon ';'\n"); iserror = 1;}
-    | error DecList SEMI {printf("Missing specifier\n"); iserror = 1;}
+    | Specifier DecList error {printf("%d: Missing semicolon ';'\n", @$);}
+    | error DecList SEMI {printf("%d: Missing specifier\n", @1); }
     ;
 
 DecList: Dec{
@@ -461,10 +462,10 @@ Exp: Exp ASSIGN Exp{
     }
     | INVALID_ID LP Args RP
     | INVALID_ID LP RP
-    | ID LP Args error{ printf("Missing closing parenthesis ')'\n"); iserror = 1;} 
-    | ID LP error { printf("Missing closing parenthesis ')'\n"); iserror = 1;}
-    | INVALID_ID LP Args error{ printf("Missing closing parenthesis ')'\n"); iserror = 1;}
-    | INVALID_ID LP error{ printf("Missing closing parenthesis ')'\n"); iserror = 1;}
+    | ID LP Args error{ printf("%d: Missing closing parenthesis ')'\n", @$);} 
+    | ID LP error { printf("%d: Missing closing parenthesis ')'\n", @$); }
+    | INVALID_ID LP Args error{ printf("%d: Missing closing parenthesis ')'\n", @$); }
+    | INVALID_ID LP error{ printf("%d: Missing closing parenthesis ')'\n", @$); }
     | Exp LB Exp RB{
         $$ = malloc(sizeof(node));
         $$->node_type = nterm;
@@ -546,5 +547,6 @@ int main(int argc, char**argv) {
 }
 
 void yyerror(const char* s) {
-    printf("Error type B at Line %d: ", yylloc.first_line-1);
+    iserror = 1;
+    printf("Error type B at Line ");
 }

@@ -9,7 +9,7 @@
         yylloc.first_line = yylineno; \
         yylloc.first_column = yycolno; \
         yylloc.last_line = yylineno; \
-        yylloc.last_column = yycolno + yyleng; \
+        yylloc.last_column = yycolno + yyleng - 1; \
         yycolno += yyleng;
 %}
 
