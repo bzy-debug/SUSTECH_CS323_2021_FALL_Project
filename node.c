@@ -45,22 +45,22 @@ void print_node(node* n){
     switch (n->node_type)
     {
     case eID:
-        printf("ID: %s\n", n->val);
+        printf("ID: %s\n", n->val.idval);
         break;
     case eTYPE:
-        printf("TYPE: %s\n", n->val);
+        printf("TYPE: %s\n", n->val.typeval);
         break;
     case eINT:
-        printf("INT: %d\n", n->val);
+        printf("INT: %d\n", n->val.intval);
         break;
     case eFLOAT:
-        printf("FLOAT: %f\n", n->val);
+        printf("FLOAT: %g\n", n->val.floatval); //TODO: possible bugs with trailing zeros
         break;
     case eCHAR:
-        printf("CHAR: %c\n", n->val);
+        printf("CHAR: %s\n", n->val.charval);
         break;
     case nterm:
-        printf("%s\n", n->val);
+        printf("%s (%d)\n", n->val.ntermval, n->line);
         break;
     case eSTRUCT:
         printf("STRUCT\n");

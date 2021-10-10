@@ -10,7 +10,7 @@ typedef union NODE_VAL
 {
     int intval;
     float floatval;
-    char charval;
+    char* charval;
     char* typeval;
     char* idval;
     char* ntermval;
@@ -21,6 +21,7 @@ typedef struct NODE
 {
     nodeType node_type;
     int isempty; // 0 not empty, 1 empty. for nterms
+    int line;
     nodeVal val;
     struct NODE* child;
     struct NODE* sibling;
