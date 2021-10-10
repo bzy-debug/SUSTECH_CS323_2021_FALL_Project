@@ -281,16 +281,18 @@ return {
 "/*" {
     int c;
     for( ; ; ){
-        while( (c = input()) != '*' && c != EOF)
-            ;
+        c = input();
+        while( c != '*' && c != 0)
+            c = input();
         if ( c == '*' ){
             while ( (c = input()) == '*' )
                 ;
             if ( c == '/')
                 break;
         }
-        if ( c == EOF ){
-            perror("EOF in comment");
+        if ( c == 0 ){
+            printf("error: EOF in comment\n");
+            iserror = 1;
             break;
         }
     }
