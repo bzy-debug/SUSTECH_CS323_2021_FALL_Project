@@ -2,6 +2,7 @@
     #include<string.h>
     #include"node.h"
     #include"syntax.tab.h"
+    static int iserror = 0;
 
     int yycolno = 1;
     #define YY_USER_ACTION \
@@ -195,20 +196,23 @@ return {
 }
 
 {int_leading0} { 
-    printf("Error type A at Line %d: Mysterious characters \'%s\'\n",
-        yylineno+1, yytext);
+    printf("Error type A at Line %d: unknown lexeme %s\n",
+        yylineno, yytext);
+    iserror = 1;
     return INVALID_TOKEN;
 }
 
 {int_invalid_hex} {
-    printf("Error type A at Line %d: Mysterious characters \'%s\'\n",
-        yylineno+1, yytext);
+    printf("Error type A at Line %d: unknown lexeme %s\n",
+        yylineno, yytext);
+    iserror = 1;
     return INVALID_TOKEN;
 }
 
 {int32_leading0} {
-    printf("Error type A at Line %d: Mysterious characters \'%s\'\n",
-        yylineno+1, yytext);
+    printf("Error type A at Line %d: unknown lexeme %s\n",
+        yylineno, yytext);
+    iserror = 1;
     return INVALID_TOKEN;
 }
 
@@ -231,20 +235,23 @@ return {
 }
 
 {char_double0s} {
-    printf("Error type A at Line %d: Mysterious characters \'%s\'\n",
-        yylineno+1, yytext);
+    printf("Error type A at Line %d: unknown lexeme %s\n",
+        yylineno, yytext);
+    iserror = 1;
     return INVALID_TOKEN;
 }
 
 {char_more_hex} {
-    printf("Error type A at Line %d: Mysterious characters \'%s\'\n",
-        yylineno+1, yytext);
+    printf("Error type A at Line %d: unknown lexeme %s\n",
+        yylineno, yytext);
+    iserror = 1;
     return INVALID_TOKEN;
 }
 
 {char_invalid_hex} {
-    printf("Error type A at Line %d: Mysterious characters \'%s\'\n",
-        yylineno+1, yytext);
+    printf("Error type A at Line %d: unknown lexeme %s\n",
+        yylineno, yytext);
+    iserror = 1;
     return INVALID_TOKEN;
 }
 
@@ -260,16 +267,18 @@ return {
 }
 
 {wrong_id} {
-    printf("Error type A at Line %d: Invalid Id: \'%s\'\n",
-        yylineno+1, yytext);
+    printf("Error type A at Line %d: unknown lexeme %s\n",
+        yylineno, yytext);
+    iserror = 1;
     return INVALID_ID;
 }
 
 \n { yycolno = 1; }
 [\t\r ]+ {}
 . {
-    printf("Invalid_token, Error type A at Line %d: Mysterious characters \'%s\'\n",
-        yylineno+1, yytext);
+    printf("Error type A at Line %d: unknown lexeme %s\n",
+        yylineno, yytext);
+    iserror = 1;
     return INVALID_TOKEN;
 }
 %%

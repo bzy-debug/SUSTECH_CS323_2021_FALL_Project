@@ -170,8 +170,8 @@ FunDec: ID LP VarList RP{
         addchild($$, 3, $1, $2, $3);
 
     }
-    | ID LP VarList error { printf("missing closing parenthesis\n"); }
-    | ID LP error { printf("missing closing parenthesis\n");}
+    | ID LP VarList error { printf("Missing closing parenthesis ')'\n"); iserror = 1;}
+    | ID LP error { printf("Missing closing parenthesis ')'\n"); iserror = 1;}
     | INVALID_ID LP VarList RP
     | INVALID_ID LP RP
     ;
@@ -249,7 +249,7 @@ Stmt: Exp SEMI{
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
     }
-    | RETURN Exp error { printf("missing colon\n"); }
+    | RETURN Exp error { printf("Missing semicolon ';'\n"); iserror = 1;}
     | IF LP Exp RP Stmt %prec LOWERELSE{
         $$ = malloc(sizeof(node));
         $$->node_type = nterm;
@@ -296,8 +296,8 @@ Def: Specifier DecList SEMI{
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
     }
-    | Specifier DecList error {printf("missing colon\n"); }
-    | error DecList SEMI {printf("missing specifier\n"); }
+    | Specifier DecList error {printf("Missing semicolon ';'\n"); iserror = 1;}
+    | error DecList SEMI {printf("Missing specifier\n"); iserror = 1;}
     ;
 
 DecList: Dec{
@@ -461,10 +461,10 @@ Exp: Exp ASSIGN Exp{
     }
     | INVALID_ID LP Args RP
     | INVALID_ID LP RP
-    | ID LP Args error{ printf("missing closing parenthesis\n");} 
-    | ID LP error { printf("missing closing parenthesis\n");}
-    | INVALID_ID LP Args error{ printf("missing closing parenthesis\n");}
-    | INVALID_ID LP error{ printf("missing closing parenthesis\n");}
+    | ID LP Args error{ printf("Missing closing parenthesis ')'\n"); iserror = 1;} 
+    | ID LP error { printf("Missing closing parenthesis ')'\n"); iserror = 1;}
+    | INVALID_ID LP Args error{ printf("Missing closing parenthesis ')'\n"); iserror = 1;}
+    | INVALID_ID LP error{ printf("Missing closing parenthesis ')'\n"); iserror = 1;}
     | Exp LB Exp RB{
         $$ = malloc(sizeof(node));
         $$->node_type = nterm;
@@ -540,6 +540,11 @@ int main(int argc, char**argv) {
     // yydebug = 1;
     yyrestart(f);
     yyparse();
-    print_tree(root, 0);
+    if(iserror == 0)
+        print_tree(root, 0);
     return 0;
+}
+
+void yyerror(const char* s) {
+    printf("Error type B at Line %d: ", yylloc.first_line-1);
 }
