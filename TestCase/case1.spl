@@ -1,0 +1,6 @@
+int case1(float a,struct b{
+    int c = 0xaf;
+    float d = 013.1;
+    int f = c+d
+
+

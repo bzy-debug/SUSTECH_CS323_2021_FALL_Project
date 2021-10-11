@@ -1,0 +1,6 @@
+int case4(){
+    char a ='\xaaa';
+    char b ='\x00';
+    int b = 0x0aaaa;
+    int 23sdf = 0xgg;
+}

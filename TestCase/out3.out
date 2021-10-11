@@ -1,0 +1,97 @@
+Program (1)
+  ExtDefList (1)
+    ExtDef (1)
+      Specifier (1)
+        TYPE: int
+      FunDec (1)
+        ID: case3
+        LP
+        VarList (1)
+          ParamDec (1)
+            Specifier (1)
+              TYPE: int
+            VarDec (1)
+              ID: a
+          COMMA
+          VarList (1)
+            ParamDec (1)
+              Specifier (1)
+                TYPE: int
+              VarDec (1)
+                ID: b
+        RP
+      CompSt (1)
+        LC
+        DefList (2)
+          Def (2)
+            Specifier (2)
+              TYPE: int
+            DecList (2)
+              Dec (2)
+                VarDec (2)
+                  ID: c
+                ASSIGN
+                Exp (2)
+                  INT: 0
+            SEMI
+        StmtList (3)
+          Stmt (3)
+            WHILE
+            LP
+            Exp (3)
+              Exp (3)
+                Exp (3)
+                  ID: a
+                GT
+                Exp (3)
+                  INT: 0
+              AND
+              Exp (3)
+                Exp (3)
+                  ID: c
+                LT
+                Exp (3)
+                  INT: 100
+            RP
+            Stmt (3)
+              CompSt (3)
+                LC
+                StmtList (4)
+                  Stmt (4)
+                    Exp (4)
+                      Exp (4)
+                        ID: c
+                      ASSIGN
+                      Exp (4)
+                        Exp (4)
+                          ID: c
+                        PLUS
+                        Exp (4)
+                          Exp (4)
+                            ID: b
+                          LB
+                          Exp (4)
+                            ID: a
+                          RB
+                    SEMI
+                  StmtList (5)
+                    Stmt (5)
+                      Exp (5)
+                        Exp (5)
+                          ID: a
+                        ASSIGN
+                        Exp (5)
+                          Exp (5)
+                            ID: a
+                          MINUS
+                          Exp (5)
+                            INT: 1
+                      SEMI
+                RC
+          StmtList (7)
+            Stmt (7)
+              RETURN
+              Exp (7)
+                ID: c
+              SEMI
+        RC
