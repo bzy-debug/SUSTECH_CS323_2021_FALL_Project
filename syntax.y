@@ -8,7 +8,7 @@
     node* type_node;
 }
 %token<type_node> INT FLOAT CHAR ID TYPE STRUCT IF ELSE WHILE RETURN
-%token<type_node> INVALID_TOKEN INVALID_ID
+%token<type_node> INVALID_TOKEN
 %token<type_node> DOT SEMI COMMA ASSIGN LT LE GT GE NE EQ PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC
 %right ASSIGN
 %left OR
@@ -133,8 +133,6 @@ StructSpecifier: STRUCT ID LC DefList RC{
         $$->line = @$.first_line;
         addchild($$, 2, $1, $2);
     }
-    | STRUCT INVALID_ID LC DefList RC
-    | STRUCT INVALID_ID
     ;
 
 /* declarator */
@@ -152,7 +150,6 @@ VarDec: ID{
         $$->line = @$.first_line;
         addchild($$, 4, $1, $2, $3, $4);
     }
-    | INVALID_ID
     ;
 
 FunDec: ID LP VarList RP{
@@ -173,8 +170,6 @@ FunDec: ID LP VarList RP{
     }
     | ID LP VarList error { printf("Missing closing parenthesis ')'\n"); }
     | ID LP error { printf("Missing closing parenthesis ')'\n"); }
-    | INVALID_ID LP VarList RP
-    | INVALID_ID LP RP
     ;
 
 VarList: ParamDec COMMA VarList{
@@ -460,12 +455,8 @@ Exp: Exp ASSIGN Exp{
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
     }
-    | INVALID_ID LP Args RP
-    | INVALID_ID LP RP
     | ID LP Args error{ printf("Missing closing parenthesis ')'\n");} 
     | ID LP error { printf("Missing closing parenthesis ')'\n"); }
-    | INVALID_ID LP Args error{ printf("Missing closing parenthesis ')'\n"); }
-    | INVALID_ID LP error{ printf("Missing closing parenthesis ')'\n"); }
     | Exp LB Exp RB{
         $$ = malloc(sizeof(node));
         $$->node_type = nterm;
@@ -488,7 +479,6 @@ Exp: Exp ASSIGN Exp{
         $$->line = @$.first_line;
         addchild($$, 1, $1);
     }
-    | INVALID_ID
     | INT{
         $$ = malloc(sizeof(node));
         $$->node_type = nterm;

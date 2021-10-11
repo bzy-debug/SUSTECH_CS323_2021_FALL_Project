@@ -199,21 +199,21 @@ return {
     printf("Error type A at Line %d: unknown lexeme %s\n",
         yylineno, yytext);
     iserror = 1;
-    return INVALID_TOKEN;
+    return INT;
 }
 
 {int_invalid_hex} {
     printf("Error type A at Line %d: unknown lexeme %s\n",
         yylineno, yytext);
     iserror = 1;
-    return INVALID_TOKEN;
+    return INT;
 }
 
 {int32_leading0} {
     printf("Error type A at Line %d: unknown lexeme %s\n",
         yylineno, yytext);
     iserror = 1;
-    return INVALID_TOKEN;
+    return INT;
 }
 
 {float} {
@@ -238,21 +238,21 @@ return {
     printf("Error type A at Line %d: unknown lexeme %s\n",
         yylineno, yytext);
     iserror = 1;
-    return INVALID_TOKEN;
+    return CHAR;
 }
 
 {char_more_hex} {
     printf("Error type A at Line %d: unknown lexeme %s\n",
         yylineno, yytext);
     iserror = 1;
-    return INVALID_TOKEN;
+    return CHAR;
 }
 
 {char_invalid_hex} {
     printf("Error type A at Line %d: unknown lexeme %s\n",
         yylineno, yytext);
     iserror = 1;
-    return INVALID_TOKEN;
+    return CHAR;
 }
 
 {id} { 
@@ -270,7 +270,7 @@ return {
     printf("Error type A at Line %d: unknown lexeme %s\n",
         yylineno, yytext);
     iserror = 1;
-    return INVALID_ID;
+    return ID;
 }
 
 "//" {
