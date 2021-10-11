@@ -1,0 +1,4 @@
+Error type B at Line 1: Missing closing parenthesis ')'
+Error type B at Line 4: Missing semicolon ';'
+Error type B at Line 4: Missing closing curly braces '}'
+

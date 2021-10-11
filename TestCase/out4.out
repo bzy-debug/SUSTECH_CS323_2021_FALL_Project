@@ -1,0 +1,5 @@
+Error type A at Line 2: unknown lexeme '\xaaa'
+Error type A at Line 3: unknown lexeme '\x00'
+Error type A at Line 4: unknown lexeme 0x0aaaa
+Error type A at Line 5: unknown lexeme 23sdf
+Error type A at Line 5: unknown lexeme 0xgg

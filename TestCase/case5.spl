@@ -1,0 +1,5 @@
+int case5(int a,int b){
+    float a = 0.35;
+    int a = a@b;
+    int b = a|b;
+}
