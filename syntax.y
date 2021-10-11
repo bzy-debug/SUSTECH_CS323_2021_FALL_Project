@@ -150,6 +150,9 @@ VarDec: ID{
         $$->line = @$.first_line;
         addchild($$, 4, $1, $2, $3, $4);
     }
+    | VarDec LB INT error {
+        printf("Missing closing bracket ']'\n");
+    }
     ;
 
 FunDec: ID LP VarList RP{
@@ -464,6 +467,9 @@ Exp: Exp ASSIGN Exp{
         $$->line = @$.first_line;
         addchild($$, 4, $1, $2, $3, $4);
     }
+    | Exp LB Exp error {
+        printf("Missing closing bracket ']'\n");
+    }
     | Exp DOT ID{
         $$ = malloc(sizeof(node));
         $$->node_type = nterm;
@@ -522,5 +528,5 @@ Args: Exp COMMA Args{
 
 void yyerror(const char* s) {
     iserror = 1;
-    printf("Error type B at Line %d: ", yylloc.first_line-1);
+    printf("Error type B at Line %d: ", yylineno);
 }

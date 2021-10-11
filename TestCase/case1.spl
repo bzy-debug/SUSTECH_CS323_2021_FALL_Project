@@ -1,6 +1,7 @@
-int case1(float a,struct b{
-    int c = 0xaf;
-    float d = 013.1;
-    int f = c+d
-
-
+int case1({
+    if (a > 0)
+        return a;
+    else{
+        return b;
+    }
+}
