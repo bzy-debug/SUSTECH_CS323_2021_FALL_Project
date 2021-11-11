@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include"syntax.tab.c"
+#include"llist.h"
 
 int main(int argc, char**argv) {
     if (argc <= 1)
@@ -15,6 +16,7 @@ int main(int argc, char**argv) {
         return 1;
     }
     yylineno = 1;
+    symbol_table = create_llist(NULL);
     // yydebug = 1;
     yyrestart(f);
     yyparse();

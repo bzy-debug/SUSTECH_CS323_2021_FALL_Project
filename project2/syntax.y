@@ -1,10 +1,11 @@
 %{
-    #include "node.h"
-    #include "type.h"
     #include"lex.yy.c"
+    #include"node.h"
+    #include"llist.h"
+    #include"llist_node.h"
     void yyerror(const char*);
     node* root;
-    node* test;
+    llist* symbol_table;
 %}
 %union {
     node* type_node;
@@ -111,6 +112,7 @@ Specifier:
         $$->val.ntermval = "Specifier";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn_node = create_node(NULL, $1->val.typeval);
     }
     | StructSpecifier{
         $$ = malloc(sizeof(node));
@@ -144,6 +146,7 @@ VarDec: ID{
         $$->val.ntermval = "VarDec";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn_node = create_node($1->val.idval, "Primitive");
     }
     | VarDec LB INT RB{
         $$ = malloc(sizeof(node));
@@ -151,6 +154,7 @@ VarDec: ID{
         $$->val.ntermval = "VarDec";
         $$->line = @$.first_line;
         addchild($$, 4, $1, $2, $3, $4);
+        $$->syn_node = create_node($1->syn_node->key, "Array");
     }
     | VarDec LB INT error {
         printf("Missing closing bracket ']'\n");
@@ -169,7 +173,6 @@ FunDec: ID LP VarList RP{
         $$->node_type = nterm;
         $$->val.ntermval = "FunDec";
         $$->line = @$.first_line;
-        node* test = $$;
         addchild($$, 3, $1, $2, $3);
 
     }
@@ -296,7 +299,6 @@ Def: Specifier DecList SEMI{
         $$->val.ntermval = "Def";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
-        // struct Type *type = createType($1->child->val.ntermval);
     }
     | Specifier DecList error {printf("Missing semicolon ';'\n");}
     | error DecList SEMI {printf("Missing specifier\n"); }
@@ -308,6 +310,8 @@ DecList: Dec{
         $$->val.ntermval = "DecList";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn_list = create_llist(NULL);
+        llist_add_front($$->syn_list, $1->syn_node);
     }
     | Dec COMMA DecList{
         $$ = malloc(sizeof(node));
@@ -315,6 +319,9 @@ DecList: Dec{
         $$->val.ntermval = "DecList";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
+        $$->syn_list = create_llist(NULL);
+        llist_add_front($$->syn_list, $1->syn_node);
+        llist_concatenate($$->syn_list, $3->syn_list);
     }
     ;
 
@@ -324,13 +331,15 @@ Dec: VarDec{
         $$->val.ntermval = "Dec";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn_node = $1->syn_node;
     }
-    | VarDec ASSIGN Exp{
+    | VarDec ASSIGN Exp{            //TODO:type checking
         $$ = malloc(sizeof(node));
         $$->node_type = nterm;
         $$->val.ntermval = "Dec";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
+        $$->syn_node = $1->syn_node;
     }
     ;
 
@@ -482,7 +491,6 @@ Exp: Exp ASSIGN Exp{
     }
     | ID{
         $$ = malloc(sizeof(node));
-        test = $1;
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;

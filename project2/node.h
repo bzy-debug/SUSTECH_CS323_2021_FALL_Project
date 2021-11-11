@@ -1,5 +1,6 @@
-#ifndef NODE_H
-#define NODE_H
+#ifndef __NODE_H
+#define __NODE_H
+#include"llist.h"
 
 typedef enum NODE_TYPE {
     eID, eTYPE, eINT, eFLOAT, eCHAR, nterm,
@@ -26,6 +27,8 @@ typedef struct NODE
     int isempty; // 0 not empty, 1 empty. for nterms
     int line;
     nodeVal val;
+    llist* syn_list;
+    llist_node* syn_node;
     struct NODE* child;
     struct NODE* sibling;
 } node;
@@ -34,4 +37,4 @@ void addchild(node* ,int , ... );
 
 void print_tree(node*, int);
 
-#endif /* NODE_H */
+#endif
