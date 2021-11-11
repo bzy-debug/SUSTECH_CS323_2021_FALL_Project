@@ -1,2 +1,1 @@
-#
-Directory for project2
+# Directory for project2
