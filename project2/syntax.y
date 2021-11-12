@@ -146,7 +146,7 @@ VarDec: ID{
         $$->val.ntermval = "VarDec";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
-        $$->syn_node = create_node($1->val.idval, "Primitive");
+        $$->syn_node = create_node($1->val.idval, "uncertain");
     }
     | VarDec LB INT RB{
         $$ = malloc(sizeof(node));
@@ -502,6 +502,7 @@ Exp: Exp ASSIGN Exp{
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn_node = create_node(NULL, "int");
     }
     | FLOAT{
         $$ = malloc(sizeof(node));
@@ -509,6 +510,7 @@ Exp: Exp ASSIGN Exp{
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn_node = create_node(NULL, "float");
     }
     | CHAR{
         $$ = malloc(sizeof(node));
@@ -516,6 +518,7 @@ Exp: Exp ASSIGN Exp{
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn_node = create_node(NULL, "char");
     }
     | INVALID_TOKEN
     | Exp INVALID_TOKEN Exp 

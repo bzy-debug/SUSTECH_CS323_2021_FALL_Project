@@ -6,6 +6,7 @@ struct _llist_node
     void* key;
     void* value;
     llist_node* next;
+    llist_node* prev;
 };
 
 llist_node* create_node(void*, void*);

@@ -6,6 +6,7 @@ llist_node* create_node(void* key, void* value){
     node->key = key;
     node->value = value;
     node->next = NULL;
+    node->prev = NULL;
     
     return node;
 }
