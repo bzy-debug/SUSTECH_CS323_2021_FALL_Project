@@ -4,6 +4,10 @@
 enum Category { PRIMITIVE, ARRAY, STRUCTURE, FUNCTION };
 enum Primitive { INTEGER, FLOATING, DOUBLE };
 typedef struct Type MyType;
+typedef struct ArrayType MyArrayType;
+typedef struct FieldType MyFieldType;
+typedef struct FunctionType MyFunctionType;
+typedef struct ParameterType MyParameterType;
 
 struct Type {
   enum Category category;
