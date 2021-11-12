@@ -5,24 +5,11 @@
 void print_node(node*);
 
 void addchild(node* p,int num, ...){
+    p->children = create_llist(NULL);
     va_list valist;
     va_start(valist, num);
-    node* cur = p->child;
-    if (cur){
-        while (cur->sibling)
-            cur = cur->sibling;
-        for(int i=0; i<num; i++){
-            cur->sibling = va_arg(valist, node*);
-            cur = cur->sibling;
-        }
-    }
-    else{
-        p->child = va_arg(valist, node*);
-        cur = p->child;
-        for(int i=1; i<num; i++){
-            cur->sibling = va_arg(valist, node*);
-            cur = cur->sibling;
-        }
+    for(int i=0; i<num; i++) {
+        llist_append(p->children, create_node(NULL, va_arg(valist, node*)));
     }
 }
 
@@ -32,12 +19,14 @@ void print_tree(node* root, int d){
     for(int i=0; i<d; i++)
         printf("  ");
     print_node(root);
-    node* cur = root->child;
-    if (!cur)   return;
-    while (cur)
+    if(!root->children) return;
+    if(root->children->size == 0) return;
+    
+    llist_node* cur = root->children->head->next;
+    while (cur != root->children->tail)
     {
-        print_tree(cur, d+1);
-        cur = cur->sibling;
+        print_tree(cur->value, d+1);
+        cur = cur->next;
     }
 }
 

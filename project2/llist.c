@@ -8,21 +8,21 @@ llist* create_llist(
     // void (*free_value) (void *)
     )
 {
-    llist* llist = malloc(sizeof llist);
+    llist* llist_ = malloc(sizeof (llist));
 
-    llist->size = 0;
-    llist->head = create_node(NULL, NULL);
-    llist->tail = create_node(NULL, NULL);
+    llist_->size = 0;
+    llist_->head = create_node(NULL, NULL);
+    llist_->tail = create_node(NULL, NULL);
 
-    llist->head->next = llist->tail;
-    llist->tail->prev = llist->head;
+    llist_->head->next = llist_->tail;
+    llist_->tail->prev = llist_->head;
 
-    llist->compare_key = compare_key;
+    llist_->compare_key = compare_key;
     // llist->to_string = to_string;
     // llist->free_key = free_key;
     // llist->free_value = free_value;
     
-    return llist;
+    return llist_;
 }
 
 int llist_add_front(llist* llist, llist_node* node){

@@ -28,8 +28,8 @@ int main(int argc, char**argv) {
 
     if(iserror == 0)
         print_tree(root, 0);
-
-    semantic_check(root, symbol_table);
+        
+    // semantic_check(root, symbol_table);
 
     return 0;
 }
@@ -50,11 +50,11 @@ void semantic_check(node* grammar_tree, llist* symbol_table) {
         if(pare->node_type == nterm && strcmp(pare->val.ntermval,"Def") == 0 ) {
 
         }
-        node* cur = pare->child;
+        llist_node* cur = pare->children->head->next;
         while (cur)
         {
-            llist_append(stack, create_node(NULL, cur));
-            cur = cur->sibling;
+            llist_append(stack, cur);
+            cur = cur->next;
         }
     } 
 }

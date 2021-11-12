@@ -29,8 +29,7 @@ typedef struct NODE
     nodeVal val;
     llist* syn_list;
     llist_node* syn_node;
-    struct NODE* child;
-    struct NODE* sibling;
+    llist* children;
 } node;
 
 void addchild(node* ,int , ... );

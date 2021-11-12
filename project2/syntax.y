@@ -56,7 +56,7 @@ ExtDefList:
         $$ = malloc(sizeof(node));
         $$->node_type = nterm;
         $$->val.ntermval = "ExtDefList";
-        $$->child = NULL;
+        $$->children = NULL;
         $$->isempty = 1;
     }
     ;
@@ -227,7 +227,7 @@ StmtList: Stmt StmtList{
         $$->node_type = nterm;
         $$->val.ntermval = "StmtList";
         $$->line = @$.first_line;
-        $$->child = NULL;
+        $$->children = NULL;
         $$->isempty = 1;
     }
     ;
@@ -289,7 +289,7 @@ DefList: Def DefList{
         $$ = malloc(sizeof(node));
         $$->node_type = nterm;
         $$->val.ntermval = "DefList";
-        $$->child = NULL;
+        $$->children = NULL;
         $$->isempty = 1;
     }
     ;
