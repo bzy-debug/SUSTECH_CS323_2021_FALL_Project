@@ -12,9 +12,9 @@ int main() {
   assert(Float->category == PRIMITIVE);
   assert(Float->primitive == FLOATING);
 
-  struct Type *Double = createType("double");
-  assert(Double->category == PRIMITIVE);
-  assert(Double->primitive == DOUBLE);
+  struct Type *Char = createType("char");
+  assert(Char->category == PRIMITIVE);
+  assert(Char->primitive == CHAR);
 
   struct Type *Array = createType("array");
   assert(Array->category == ARRAY);
@@ -27,7 +27,7 @@ int main() {
 
   assert(-1 == typeEqual(Integer, Array));
   assert(-1 == typeEqual(Float, Struct));
-  assert(-1 == typeEqual(Double, Func));
+  assert(-1 == typeEqual(Char, Func));
   assert(-1 == typeEqual(Array, Struct));
   assert(-1 == typeEqual(Array, Func));
   assert(-1 == typeEqual(Struct, Func));
@@ -47,14 +47,14 @@ int main() {
   addStructField(Struct, Float, "flo");
   assert(typeEqual(Float, findFieldType(Struct, "flo")) == 0);
 
-  addStructField(Struct, Double, "dou");
-  assert(typeEqual(Double, findFieldType(Struct, "dou")) == 0);
+  addStructField(Struct, Char, "cha");
+  assert(typeEqual(Char, findFieldType(Struct, "cha")) == 0);
 
   struct Type *structtype = createType("struct");
   struct Type *floattype = createType("float");
-  struct Type *doubletype = createType("double");
+  struct Type *chartype = createType("char");
   addStructField(structtype, floattype, "foo");
-  addStructField(structtype, doubletype, "bar");
+  addStructField(structtype, chartype, "bar");
   assert(typeEqual(Struct, structtype) == 0);
 
   addStructField(structtype, Integer, "var");

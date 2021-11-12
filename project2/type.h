@@ -2,7 +2,7 @@
 #define TYPE_H
 
 enum Category { PRIMITIVE, ARRAY, STRUCTURE, FUNCTION };
-enum Primitive { INTEGER, FLOATING, DOUBLE };
+enum Primitive { INTEGER, FLOATING, CHAR };
 typedef struct Type MyType;
 typedef struct ArrayType MyArrayType;
 typedef struct FieldType MyFieldType;

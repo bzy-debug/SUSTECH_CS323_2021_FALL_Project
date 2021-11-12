@@ -15,10 +15,10 @@ struct Type *createType(char *str) {
     type->primitive = FLOATING;
     return type;
   }
-  if (strcmp(str, "double") == 0) {
+  if (strcmp(str, "char") == 0) {
     struct Type *type = malloc(sizeof(struct Type));
     type->category = PRIMITIVE;
-    type->primitive = DOUBLE;
+    type->primitive = CHAR;
     return type;
   }
 
