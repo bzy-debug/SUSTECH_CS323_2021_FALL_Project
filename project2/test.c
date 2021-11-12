@@ -36,19 +36,19 @@ int main() {
   setArrayType(Array, Integer);
   assert(Array->array->size == 10);
   assert(Array->array->type == Integer);
+  assert(typeEqual(Integer, findArrayType(Array)) == 0);
 
   struct Type *arraytype = createType("array");
   setArraySize(arraytype, 10);
   setArrayType(arraytype, Float);
   assert(-1 == typeEqual(Array, arraytype));
+  assert(typeEqual(Float, findArrayType(arraytype)) == 0);
 
   addStructField(Struct, Float, "flo");
-  assert(Struct->structure->type == Float);
-  assert(strcmp(Struct->structure->name, "flo") == 0);
+  assert(typeEqual(Float, findFieldType(Struct, "flo")) == 0);
 
   addStructField(Struct, Double, "dou");
-  assert(Struct->structure->next->type == Double);
-  assert(strcmp(Struct->structure->next->name, "dou") == 0);
+  assert(typeEqual(Double, findFieldType(Struct, "dou")) == 0);
 
   struct Type *structtype = createType("struct");
   struct Type *floattype = createType("float");
@@ -72,6 +72,9 @@ int main() {
   addFuncParameter(functype, inttype, "a");
   addFuncParameter(functype, inttype, "b");
   assert(typeEqual(functype, Func) == 0);
+
+  assert(typeEqual(inttype, findFuncParamType(functype, 0)) == 0);
+  assert(typeEqual(inttype, findFuncParamType(functype, 1)) == 0);
 
   printf("Success!\n");
 }

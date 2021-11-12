@@ -52,6 +52,12 @@ void addFuncParameter(struct Type *function, struct Type *param, char *name);
 
 void setFuncReturnType(struct Type *func, struct Type *returnType);
 
+struct Type *findArrayType(struct Type *array);
+
+struct Type *findFieldType(struct Type *structure, char *name);
+
+struct Type *findFuncParamType(struct Type *func, int idx);
+
 int typeEqual(struct Type *t1, struct Type *t2);
 
 int primitiveTypeEqual(enum Primitive t1, enum Primitive t2);

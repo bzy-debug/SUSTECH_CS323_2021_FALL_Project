@@ -193,3 +193,30 @@ int parameterTypeEqual(struct ParameterType* t1, struct ParameterType* t2) {
     return -1;
   }
 }
+
+struct Type *findArrayType(struct Type *array) {
+  return array->array->type;
+}
+
+struct Type *findFieldType(struct Type *structure, char *name) {
+  struct FieldType *field = structure->structure;
+  while (field != NULL) {
+    if (strcmp(field->name, name) == 0) {
+      return field->type;
+    }
+    field = field->next;
+  }
+  return NULL;
+}
+
+struct Type *findFuncParamType(struct Type *func, int idx) {
+  struct ParameterType *param = func->function->parameters;
+  while (param != NULL) {
+    if (idx == 0) {
+      return param->type;
+    }
+    --idx;
+    param = param->next;
+  }
+  return NULL;
+}
