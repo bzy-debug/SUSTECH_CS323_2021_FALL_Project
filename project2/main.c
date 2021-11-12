@@ -15,7 +15,7 @@ int main(int argc, char**argv) {
     char* outa = malloc(sizeof(char)*(l+1));
     strcpy(outa, argv[1]);
     outa[l-3]='o'; outa[l-2]='u'; outa[l-1]='t';
-    freopen(outa, "w", stdout);
+    // freopen(outa, "w", stdout);
     FILE *f = fopen(argv[1], "r");
     if (!f){
         perror(argv[1]);
@@ -28,8 +28,8 @@ int main(int argc, char**argv) {
 
     if(iserror == 0)
         print_tree(root, 0);
-        
-    // semantic_check(root, symbol_table);
+
+    semantic_check(root, symbol_table);
 
     return 0;
 }
@@ -47,14 +47,17 @@ void semantic_check(node* grammar_tree, llist* symbol_table) {
     while (stack->size >= 1)
     {
         node* pare = (node*)(llist_pop(stack)->value);
-        if(pare->node_type == nterm && strcmp(pare->val.ntermval,"Def") == 0 ) {
+        if(pare->isempty || pare->children == NULL)   continue;
 
+        if(pare->node_type == nterm && strcmp(pare->val.ntermval,"Def") == 0 ) {
+            print_tree(pare, 0);
+            
         }
-        llist_node* cur = pare->children->head->next;
-        while (cur)
+        llist_node* cur = pare->children->tail->prev;
+        while (cur != pare->children->head)
         {
-            llist_append(stack, cur);
-            cur = cur->next;
+            llist_append(stack, create_node(NULL, cur->value));
+            cur = cur->prev;
         }
     } 
 }

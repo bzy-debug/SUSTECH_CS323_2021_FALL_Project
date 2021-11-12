@@ -3,6 +3,7 @@
 
 enum Category { PRIMITIVE, ARRAY, STRUCTURE, FUNCTION };
 enum Primitive { INTEGER, FLOATING, DOUBLE };
+typedef struct Type MyType;
 
 struct Type {
   enum Category category;
