@@ -49,18 +49,7 @@ void print_node(node* n){
         printf("CHAR: %s\n", n->val.charval);
         break;
     case nterm:
-        printf("%s (%d)", n->val.ntermval, n->line);
-        if(n->syn_node != NULL)
-            printf("%s, %s", (char*) n->syn_node->key, (char*) n->syn_node->value);
-        if(n->syn_list != NULL){
-            llist_node* cur = n->syn_list->head->next;
-            while (cur)
-            {
-                printf("(%s %s) ", (char*)cur->key,(char*) cur->value);
-                cur=cur->next;
-            }
-        }
-        printf("\n");
+        printf("%s (%d)\n", n->val.ntermval, n->line);
         break;
     case eSTRUCT:
         printf("STRUCT\n");

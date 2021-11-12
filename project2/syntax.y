@@ -112,7 +112,6 @@ Specifier:
         $$->val.ntermval = "Specifier";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
-        $$->syn_node = create_node(NULL, $1->val.typeval);
     }
     | StructSpecifier{
         $$ = malloc(sizeof(node));
@@ -146,7 +145,6 @@ VarDec: ID{
         $$->val.ntermval = "VarDec";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
-        $$->syn_node = create_node($1->val.idval, "uncertain");
     }
     | VarDec LB INT RB{
         $$ = malloc(sizeof(node));
@@ -154,7 +152,6 @@ VarDec: ID{
         $$->val.ntermval = "VarDec";
         $$->line = @$.first_line;
         addchild($$, 4, $1, $2, $3, $4);
-        $$->syn_node = create_node($1->syn_node->key, "Array");
     }
     | VarDec LB INT error {
         printf("Missing closing bracket ']'\n");
@@ -310,8 +307,6 @@ DecList: Dec{
         $$->val.ntermval = "DecList";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
-        $$->syn_list = create_llist(NULL);
-        llist_add_front($$->syn_list, $1->syn_node);
     }
     | Dec COMMA DecList{
         $$ = malloc(sizeof(node));
@@ -319,9 +314,6 @@ DecList: Dec{
         $$->val.ntermval = "DecList";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
-        $$->syn_list = create_llist(NULL);
-        llist_add_front($$->syn_list, $1->syn_node);
-        llist_concatenate($$->syn_list, $3->syn_list);
     }
     ;
 
@@ -331,7 +323,6 @@ Dec: VarDec{
         $$->val.ntermval = "Dec";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
-        $$->syn_node = $1->syn_node;
     }
     | VarDec ASSIGN Exp{            //TODO:type checking
         $$ = malloc(sizeof(node));
@@ -339,7 +330,6 @@ Dec: VarDec{
         $$->val.ntermval = "Dec";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
-        $$->syn_node = $1->syn_node;
     }
     ;
 
@@ -502,7 +492,6 @@ Exp: Exp ASSIGN Exp{
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
-        $$->syn_node = create_node(NULL, "int");
     }
     | FLOAT{
         $$ = malloc(sizeof(node));
@@ -510,7 +499,6 @@ Exp: Exp ASSIGN Exp{
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
-        $$->syn_node = create_node(NULL, "float");
     }
     | CHAR{
         $$ = malloc(sizeof(node));
@@ -518,7 +506,6 @@ Exp: Exp ASSIGN Exp{
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
-        $$->syn_node = create_node(NULL, "char");
     }
     | INVALID_TOKEN
     | Exp INVALID_TOKEN Exp 

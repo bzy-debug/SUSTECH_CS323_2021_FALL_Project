@@ -27,8 +27,6 @@ typedef struct NODE
     int isempty; // 0 not empty, 1 empty. for nterms
     int line;
     nodeVal val;
-    llist* syn_list;
-    llist_node* syn_node;
     llist* children;
 } node;
 
