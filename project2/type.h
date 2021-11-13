@@ -2,14 +2,14 @@
 #define TYPE_H
 
 enum Category { PRIMITIVE, ARRAY, STRUCTURE, FUNCTION };
-enum Primitive { INTEGER, FLOATING, CHAR };
+enum Primitive { INTEGER, FLOATING, CHARACTER };
 typedef struct Type MyType;
 typedef struct ArrayType MyArrayType;
 typedef struct FieldType MyFieldType;
 typedef struct FunctionType MyFunctionType;
 typedef struct ParameterType MyParameterType;
 
-struct Type {
+struct Type{
   enum Category category;
   union {
     enum Primitive primitive;

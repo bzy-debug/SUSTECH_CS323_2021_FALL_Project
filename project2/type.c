@@ -18,7 +18,7 @@ struct Type *createType(char *str) {
   if (strcmp(str, "char") == 0) {
     struct Type *type = malloc(sizeof(struct Type));
     type->category = PRIMITIVE;
-    type->primitive = CHAR;
+    type->primitive = CHARACTER;
     return type;
   }
 

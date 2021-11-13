@@ -14,7 +14,7 @@ int main() {
 
   struct Type *Char = createType("char");
   assert(Char->category == PRIMITIVE);
-  assert(Char->primitive == CHAR);
+  assert(Char->primitive == CHARACTER);
 
   struct Type *Array = createType("array");
   assert(Array->category == ARRAY);
