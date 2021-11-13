@@ -28,10 +28,15 @@ typedef struct NODE
     int line;
     nodeVal val;
     llist* children;
+    llist_node* syn;
+    llist* syn_list;
 } node;
+
 
 void addchild(node* ,int , ... );
 
 void print_tree(node*, int);
+
+node* create_grammar_node(nodeType nodeType, nodeVal val, int line);
 
 #endif

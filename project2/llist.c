@@ -1,12 +1,9 @@
 #include"llist.h"
 #include<stdlib.h>
+#include<string.h>
+#include<stdio.h>
 
-llist* create_llist(
-    int (*compare_key) (const void*, const void*)
-    // char* (*to_string) (void *),
-    // void (*free_key) (void *),
-    // void (*free_value) (void *)
-    )
+llist* create_llist()
 {
     llist* llist_ = malloc(sizeof (llist));
 
@@ -17,11 +14,6 @@ llist* create_llist(
     llist_->head->next = llist_->tail;
     llist_->tail->prev = llist_->head;
 
-    llist_->compare_key = compare_key;
-    // llist->to_string = to_string;
-    // llist->free_key = free_key;
-    // llist->free_value = free_value;
-    
     return llist_;
 }
 
@@ -65,13 +57,28 @@ int llist_concatenate(llist* left, llist* right) {
     left->tail->prev->next = right->head->next;
     right->head->next->prev = left->tail->prev;
     left->tail = right->tail;
-    right->head = left->head;
 }
 
 llist_node* llist_get(llist* llist, void* key) {
     llist_node* cur = llist->head->next;
-    while (cur != NULL && (llist->compare_key)(cur->key, key) != 0){
+    while (cur != NULL && strcmp(cur->key, key) != 0){
         cur = cur->next;
     }
     return cur; 
+}
+
+int llist_update(llist* llist, void* key, void* new_value) {
+    llist_get(llist, key)->value = new_value;
+    return 0;
+}
+
+void llist_print(const llist* llist) {
+    llist_node* cur = llist->head->next;
+    // if(cur == NULL) return;
+    while (cur != llist->tail)
+    {
+        // if(cur == NULL) return;
+        printf("%s ", cur->key);
+        cur = cur->next;
+    }
 }

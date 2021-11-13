@@ -3,6 +3,7 @@
     #include"node.h"
     #include"llist.h"
     #include"llist_node.h"
+    #include"type.h"
     void yyerror(const char*);
     node* root;
     llist* symbol_table;
@@ -68,6 +69,18 @@ ExtDef:
         $$->val.ntermval = "ExtDef";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
+        llist_node* cur = $2->syn_list->head->next;
+        while (cur != $2->syn_list->tail) {
+            if (cur->value == NULL){
+                cur->value = $1->syn->value;
+            }
+            else {
+                addArrayType(cur->value, $1->syn->value);
+            }
+            cur = cur->next;
+        }
+        $$->syn_list = $2->syn_list;
+        llist_concatenate(symbol_table, $$->syn_list);
     }
     | Specifier SEMI{
         $$ = malloc(sizeof(node));
@@ -75,6 +88,7 @@ ExtDef:
         $$->val.ntermval = "ExtDef";
         $$->line = @$.first_line;
         addchild($$, 2, $1, $2);
+        $$->syn_list = create_llist();
     }
     | Specifier FunDec CompSt{
         $$ = malloc(sizeof(node));
@@ -82,6 +96,9 @@ ExtDef:
         $$->val.ntermval = "ExtDef";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
+        $$->syn_list = create_llist();
+        setFuncReturnType($2->syn->value, $1->syn->value);
+        llist_append(symbol_table, $2->syn);
     }
     | error FunDec CompSt { printf("Missing specifier\n"); }
     ;
@@ -94,6 +111,9 @@ ExtDecList:
         $$->line = @$.first_line;
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn_list = create_llist();
+        llist_append($$->syn_list, $1->syn);
+
     }
     | VarDec COMMA ExtDecList{
         $$ = malloc(sizeof(node));
@@ -101,6 +121,9 @@ ExtDecList:
         $$->val.ntermval = "ExtDecList";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
+        $$->syn_list = create_llist();
+        llist_append($$->syn_list, $1->syn);
+        llist_concatenate($$->syn_list, $3->syn_list);
     }
     ;
 
@@ -112,6 +135,7 @@ Specifier:
         $$->val.ntermval = "Specifier";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn = create_node(NULL, createType($1->val.typeval));
     }
     | StructSpecifier{
         $$ = malloc(sizeof(node));
@@ -119,6 +143,8 @@ Specifier:
         $$->val.ntermval = "Specifier";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn = $1->syn;
+        llist_append(symbol_table, $$->syn);
     }
     ;
 
@@ -128,8 +154,16 @@ StructSpecifier: STRUCT ID LC DefList RC{
         $$->val.ntermval = "StructSpecifier";
         $$->line = @$.first_line;
         addchild($$, 5, $1, $2, $3, $4, $5);
+        $$->syn = create_node($2->val.idval, createType("struct"));
+
+        llist_node* cur = $4->syn_list->head->next;
+        while (cur != $4->syn_list->tail) {
+            addStructField($$->syn->value, cur->value, cur->key);
+            cur = cur->next;
+        }
+
     }
-    | STRUCT ID{
+    | STRUCT ID{                    //type checking
         $$ = malloc(sizeof(node));
         $$->node_type = nterm;
         $$->val.ntermval = "StructSpecifier";
@@ -145,6 +179,7 @@ VarDec: ID{
         $$->val.ntermval = "VarDec";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn = create_node($1->val.idval, NULL);
     }
     | VarDec LB INT RB{
         $$ = malloc(sizeof(node));
@@ -152,6 +187,9 @@ VarDec: ID{
         $$->val.ntermval = "VarDec";
         $$->line = @$.first_line;
         addchild($$, 4, $1, $2, $3, $4);
+        $$->syn = create_node($1->syn->key, createType("array"));
+        setArraySize($$->syn->value, $3->val.intval);
+        setArrayType($$->syn->value, $1->syn->value);
     }
     | VarDec LB INT error {
         printf("Missing closing bracket ']'\n");
@@ -164,6 +202,12 @@ FunDec: ID LP VarList RP{
         $$->val.ntermval = "FunDec";
         $$->line = @$.first_line;
         addchild($$, 4, $1, $2, $3, $4);
+        $$->syn = create_node($1->val.idval, createType("func"));
+        llist_node* cur = $3->syn_list->head->next;
+        while (cur != $3->syn_list->tail) {
+            addFuncParameter($$->syn->value, cur->value, cur->key);
+            cur = cur->next;
+        }
     }
     | ID LP RP{
         $$ = malloc(sizeof(node));
@@ -171,7 +215,7 @@ FunDec: ID LP VarList RP{
         $$->val.ntermval = "FunDec";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
-
+        $$->syn = create_node($1->val.idval, createType("func"));
     }
     | ID LP VarList error { printf("Missing closing parenthesis ')'\n"); }
     | ID LP error { printf("Missing closing parenthesis ')'\n"); }
@@ -183,6 +227,9 @@ VarList: ParamDec COMMA VarList{
         $$->val.ntermval = "VarList";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
+        $$->syn_list = create_llist();
+        llist_append($$->syn_list, $1->syn);
+        llist_concatenate($$->syn_list, $3->syn_list);
     }
     | ParamDec{
         $$ = malloc(sizeof(node));
@@ -190,6 +237,8 @@ VarList: ParamDec COMMA VarList{
         $$->val.ntermval = "VarList";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn_list = create_llist();
+        llist_append($$->syn_list, $1->syn);
     }
     ;
 
@@ -199,6 +248,13 @@ ParamDec: Specifier VarDec{
         $$->val.ntermval = "ParamDec";
         $$->line = @$.first_line;
         addchild($$, 2, $1, $2);
+        if($2->syn->value == NULL) {
+            $2->syn->value = $1->syn->value;
+        }
+        else {
+            addArrayType($2->syn->value, $1->syn->value);
+        }
+        $$->syn = $2->syn;
     }
     ;
 
@@ -209,6 +265,7 @@ CompSt: LC DefList StmtList RC{
         $$->val.ntermval = "CompSt";
         $$->line = @$.first_line;
         addchild($$, 4, $1, $2, $3, $4);
+        llist_concatenate(symbol_table, $2->syn_list);
     }
     ;
 
@@ -281,6 +338,13 @@ DefList: Def DefList{
         $$->val.ntermval = "DefList";
         $$->line = @$.first_line;
         addchild($$, 2, $1, $2);
+        if($2->isempty) {
+            $$->syn_list = $1->syn_list;
+        }
+        else {
+            llist_concatenate($1->syn_list, $2->syn_list);
+            $$->syn_list = $1->syn_list;
+        }
     }
     | %empty {
         $$ = malloc(sizeof(node));
@@ -288,6 +352,7 @@ DefList: Def DefList{
         $$->val.ntermval = "DefList";
         $$->children = NULL;
         $$->isempty = 1;
+        $$->syn_list = create_llist();
     }
     ;
 Def: Specifier DecList SEMI{
@@ -296,6 +361,17 @@ Def: Specifier DecList SEMI{
         $$->val.ntermval = "Def";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
+        llist_node* cur = $2->syn_list->head->next;
+        while (cur != $2->syn_list->tail) {
+            if (cur->value == NULL){
+                cur->value = $1->syn->value;
+            }
+            else {
+                addArrayType(cur->value, $1->syn->value);
+            }
+            cur = cur->next;
+        }
+        $$->syn_list = $2->syn_list;
     }
     | Specifier DecList error {printf("Missing semicolon ';'\n");}
     | error DecList SEMI {printf("Missing specifier\n"); }
@@ -307,6 +383,8 @@ DecList: Dec{
         $$->val.ntermval = "DecList";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn_list = create_llist();
+        llist_append($$->syn_list, $1->syn);
     }
     | Dec COMMA DecList{
         $$ = malloc(sizeof(node));
@@ -314,6 +392,9 @@ DecList: Dec{
         $$->val.ntermval = "DecList";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
+        $$->syn_list = create_llist();
+        llist_append($$->syn_list, $1->syn);
+        llist_concatenate($$->syn_list, $3->syn_list);
     }
     ;
 
@@ -323,6 +404,7 @@ Dec: VarDec{
         $$->val.ntermval = "Dec";
         $$->line = @$.first_line;
         addchild($$, 1, $1);
+        $$->syn = $1->syn;
     }
     | VarDec ASSIGN Exp{            //TODO:type checking
         $$ = malloc(sizeof(node));
@@ -330,6 +412,7 @@ Dec: VarDec{
         $$->val.ntermval = "Dec";
         $$->line = @$.first_line;
         addchild($$, 3, $1, $2, $3);
+        $$->syn = $1->syn;
     }
     ;
 

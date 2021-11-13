@@ -7,18 +7,9 @@ struct _llist {
     int size;
     llist_node* head;
     llist_node* tail;
-    int (*compare_key) (const void*, const void*);
-    // char* (*to_string) (void *);
-    // void (*free_key) (void *);
-    // void (*free_value) (void *);
 };
 
-llist* create_llist(
-    int (*compare_key) (const void*, const void*)
-    // char* (*to_string) (void *),
-    // void (*free_key) (void *),
-    // void (*free_value) (void *)
-);
+llist* create_llist();
 
 int llist_add_front(llist*, llist_node*);
 
@@ -29,4 +20,8 @@ llist_node* llist_pop(llist*);
 int llist_concatenate(llist*, llist*);
 
 llist_node* llist_get(llist*, void*);
+
+int llist_update(llist*, void* key, void* new_value);
+
+void llist_print(const llist* llist);
 #endif

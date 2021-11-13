@@ -1,8 +1,16 @@
 #include"node.h"
 #include<stdarg.h>
+#include<stdlib.h>
 #include<stdio.h>
 
-void print_node(node*);
+void print_node(node* n);
+
+node* create_grammar_node(nodeType nodeType, nodeVal val, int line) {
+    node* new_node = malloc(sizeof(node));
+    new_node->node_type = nodeType;
+    new_node->val = val;
+    new_node->line = line;
+}
 
 void addchild(node* p,int num, ...){
     p->children = create_llist(NULL);
@@ -11,6 +19,7 @@ void addchild(node* p,int num, ...){
     for(int i=0; i<num; i++) {
         llist_append(p->children, create_node(NULL, va_arg(valist, node*)));
     }
+    va_end(valist);
 }
 
 void print_tree(node* root, int d){
@@ -49,7 +58,10 @@ void print_node(node* n){
         printf("CHAR: %s\n", n->val.charval);
         break;
     case nterm:
-        printf("%s (%d)\n", n->val.ntermval, n->line);
+        printf("%s (%d)", n->val.ntermval, n->line);
+        if(n->syn)
+            printf("%s", n->syn->key);
+        printf("\n");
         break;
     case eSTRUCT:
         printf("STRUCT\n");

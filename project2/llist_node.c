@@ -1,7 +1,7 @@
 #include"llist_node.h"
 #include<stdlib.h>
 
-llist_node* create_node(void* key, void* value){
+llist_node* create_node(char* key, void* value){
     llist_node* node = malloc(sizeof(llist_node));
     node->key = key;
     node->value = value;

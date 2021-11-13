@@ -51,6 +51,8 @@ void setArraySize(struct Type *array, int size);
 
 void setArrayType(struct Type *array, struct Type *type);
 
+void addArrayType(struct Type *array, struct Type *type);
+
 void addStructField(struct Type *structure, struct Type *field, char *name);
 
 void addFuncParameter(struct Type *function, struct Type *param, char *name);
