@@ -195,6 +195,9 @@ int parameterTypeEqual(struct ParameterType* t1, struct ParameterType* t2) {
 }
 
 struct Type *findArrayType(struct Type *array) {
+  while (array->array->type->category == ARRAY) {
+    array = array->array->type;
+  }
   return array->array->type;
 }
 

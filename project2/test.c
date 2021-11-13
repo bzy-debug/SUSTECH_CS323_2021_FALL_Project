@@ -76,5 +76,10 @@ int main() {
   assert(typeEqual(inttype, findFuncParamType(functype, 0)) == 0);
   assert(typeEqual(inttype, findFuncParamType(functype, 1)) == 0);
 
+  struct Type *arr = createType("array");
+  setArrayType(arr, inttype);
+  setArrayType(Array, arr);
+  assert(typeEqual(Integer, findArrayType(Array)) == 0);
+
   printf("Success!\n");
 }
