@@ -59,8 +59,6 @@ void print_node(node* n){
         break;
     case nterm:
         printf("%s (%d)", n->val.ntermval, n->line);
-        if(n->syn)
-            printf("%s", n->syn->key);
         printf("\n");
         break;
     case eSTRUCT:

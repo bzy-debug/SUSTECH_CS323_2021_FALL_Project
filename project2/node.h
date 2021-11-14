@@ -28,8 +28,6 @@ typedef struct NODE
     int line;
     nodeVal val;
     llist* children;
-    llist_node* syn;
-    llist* syn_list;
 } node;
 
 

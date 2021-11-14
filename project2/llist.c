@@ -59,16 +59,29 @@ int llist_concatenate(llist* left, llist* right) {
     left->tail = right->tail;
 }
 
-llist_node* llist_get(llist* llist, void* key) {
+llist_node* llist_get_by_key(llist* llist, char* key) {
     llist_node* cur = llist->head->next;
-    while (cur != NULL && strcmp(cur->key, key) != 0){
+    while (cur != llist->tail && strcmp(cur->key, key) != 0){
         cur = cur->next;
     }
-    return cur; 
+    if(cur == llist->tail)
+        return NULL;
+    return cur;
+}
+
+llist_node* llist_get_by_index(llist* llist, int index) {
+    if(index >= llist->size) {
+        return NULL;
+    }
+    llist_node* cur = llist->head->next;
+    for(int i=0; i<index; i++) {
+        cur = cur->next;
+    }
+    return cur;
 }
 
 int llist_update(llist* llist, void* key, void* new_value) {
-    llist_get(llist, key)->value = new_value;
+    llist_get_by_key(llist, key)->value = new_value;
     return 0;
 }
 
