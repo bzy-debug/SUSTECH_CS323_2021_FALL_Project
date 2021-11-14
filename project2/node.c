@@ -13,7 +13,7 @@ node* create_grammar_node(nodeType nodeType, nodeVal val, int line) {
 }
 
 void addchild(node* p,int num, ...){
-    p->children = create_llist(NULL);
+    p->children = create_llist();
     va_list valist;
     va_start(valist, num);
     for(int i=0; i<num; i++) {

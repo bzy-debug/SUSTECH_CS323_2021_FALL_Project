@@ -35,6 +35,7 @@ int main(int argc, char**argv) {
         return 1;
 
     semantic_check(root, symbol_table);
+    print_symbol_table(symbol_table);
 
     return 0;
 }
@@ -56,13 +57,14 @@ void semantic_check(node* grammar_tree, llist* symbol_table) {
 
         if(pare->node_type == nterm && strcmp(pare->val.ntermval,"Def") == 0 ) {
             llist* t = get_symbol_node_list_from_def(pare);
-            print_symbol_table(t);
+            llist_concatenate(symbol_table, t);
+            // print_symbol_table(symbol_table);
             continue;
         }
         else if (pare->node_type == nterm && strcmp(pare->val.ntermval,"ExtDef") == 0) {
             llist* t = get_symbol_node_list_from_extdef(pare);
-            print_symbol_table(t);
-            // continue;
+            llist_concatenate(symbol_table, t);
+            // print_symbol_table(symbol_table);
         }
 
         llist_node* cur = pare->children->tail->prev;

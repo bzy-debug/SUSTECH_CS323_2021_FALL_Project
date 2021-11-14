@@ -119,7 +119,8 @@ llist* get_symbol_node_list_from_extdef(node* extdef) {
         llist* func_list = create_llist();
         MyType* return_type = get_type_from_specifier(extdef->children->head->next->value);
         node* fundec = (node*) extdef->children->head->next->next->value;
-        llist_append(func_list, get_symbol_node_from_fundec(fundec, return_type));
+        llist_node* temp = get_symbol_node_from_fundec(fundec, return_type);
+        llist_append(func_list, temp);
         return func_list;
     }
 }

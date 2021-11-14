@@ -26,17 +26,20 @@ struct Type *createType(char *str) {
     struct Type *type = malloc(sizeof(struct Type));
     type->category = ARRAY;
     type->array = malloc(sizeof(struct ArrayType));
+    type->array->type = NULL;
     return type;
   }
   if (strcmp(str, "struct") == 0) {
     struct Type *type = malloc(sizeof(struct Type));
     type->category = STRUCTURE;
+    type->structure = NULL;
     return type;
   }
   if (strcmp(str, "func") == 0) {
     struct Type *type = malloc(sizeof(struct Type));
     type->category = FUNCTION;
     type->function = malloc(sizeof(struct FunctionType));
+    type->function->parameters = NULL;
     return type;
   }
   return NULL;
