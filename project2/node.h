@@ -1,6 +1,7 @@
 #ifndef __NODE_H
 #define __NODE_H
 #include"llist.h"
+#include"type.h"
 
 typedef enum NODE_TYPE {
     eID, eTYPE, eINT, eFLOAT, eCHAR, nterm,
@@ -28,6 +29,7 @@ typedef struct NODE
     int isexplored;
     int line;
     nodeVal val;
+    MyType* type;
     llist* children;
     struct NODE* pare;
 } node;

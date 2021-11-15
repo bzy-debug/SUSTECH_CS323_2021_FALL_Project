@@ -1,4 +1,5 @@
 #include"symbol_table.h"
+#include"semantic_error.h"
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
@@ -110,7 +111,11 @@ llist* get_symbol_node_list_from_def(node* def, llist* symbol_table) {
 
         if(pare->node_type == nterm && strcmp(pare->val.ntermval,"VarDec") == 0 ) {
             llist_node* t = get_symbol_node_from_vardec(pare, specifier_type, NULL, symbol_table);
-            llist_append(symbol_node_list, t);
+            if(llist_contains(symbol_node_list, t->key)){
+                semantic_error(3, def->line, t->key);
+            }
+            else
+                llist_append(symbol_node_list, t);
             continue;
         }
 
@@ -179,4 +184,85 @@ llist_node* get_symbol_node_from_fundec(node* fundec, MyType* return_type, llist
 llist_node* get_symbol_node_from_paramdec(node* paramdec, llist* symbol_table) {
     MyType* specifier_type = get_type_from_specifier(paramdec->children->head->next->value, symbol_table);
     return get_symbol_node_from_vardec(paramdec->children->head->next->next->value, specifier_type, NULL, symbol_table);
+}
+
+MyType* get_type_by_key(char* key, llist* symbol_table_stack) {
+    llist_node* cur = symbol_table_stack->tail->prev;
+    llist_node* type_node = NULL;
+    while (cur != symbol_table_stack->head) {
+        llist* symbol_table = cur->value;
+        type_node = llist_get_by_key(symbol_table, key);
+        if(type_node != NULL) {
+            return (MyType*)type_node->value; 
+        }
+        cur = cur->prev;
+    }
+    return NULL;
+}
+
+int symbol_table_duplicate(llist* symbol_table_stack, char* key) {
+    llist_node* cur = symbol_table_stack->tail->prev;
+    int count = 0;
+    while (cur != symbol_table_stack->head) {
+        llist* symbol_table = cur->value;
+        count += llist_duplicate(symbol_table, key);
+        cur = cur->prev;
+    }
+    return count;
+}
+
+int symbol_table_contains_func(llist* symbol_table_stack, char* key) {
+    int t = symbol_table_duplicate(symbol_table_stack, key);
+    return t >= 2;
+}
+
+MyType* get_exp_type(node* exp, llist* symbol_table_stack) {
+    exp->isexplored = 1;
+    node* first_child = (node*) exp->children->head->next->value;
+
+    if(exp->children->size == 1 && first_child->node_type == eID) {
+        char* id = first_child->val.idval;
+        exp->type = get_type_by_key(id, symbol_table_stack);
+        return exp->type;
+    }
+    else if (exp->children->size >=3 && first_child->node_type == eID) { 
+        // function call
+        char* func_id = first_child->val.idval;
+        MyType* func_type = get_type_by_key(func_id, symbol_table_stack);
+        exp->type = func_type->function->returnType;
+        return exp->type;
+    }
+    else if (exp->children->size == 1 && first_child->node_type == eINT) {
+        exp->type = createType("int");
+        return exp->type;
+    }
+    else if (exp->children->size == 1 && first_child->node_type == eFLOAT) {
+        exp->type = createType("float");
+        return exp->type;
+    }
+    else if (exp->children->size == 2){
+        node* second_child = (node*) exp->children->head->next->next->value;
+        exp->type = get_exp_type(second_child, symbol_table_stack);
+        return exp->type;
+    }
+    else if (exp->children->size == 3) {
+        node* second_child = (node*) exp->children->head->next->next->value;
+        if(second_child->node_type == eDOT) { 
+            //TODO:struct
+
+        }
+        else if (second_child->node_type == nterm && strcmp(second_child->val.ntermval, "Exp") == 0) {
+            // Exp -> LP Exp RP
+            exp->type = get_exp_type(second_child, symbol_table_stack);
+            return exp->type;
+        }
+        else {
+            exp->type = get_exp_type(first_child, symbol_table_stack);
+            return exp->type;
+        }
+    }
+    else if (exp->children->size == 4) {
+        //TODO array
+
+    }
 }

@@ -8,7 +8,7 @@ BISON = bison
 	$(BISON) -d -t -v syntax.y
 splc: .lex .syntax
 	mkdir bin
-	$(CC) -g main.c node.c type.c llist.c llist_node.c symbol_table.c -lfl -ly -o bin/splc
+	$(CC) -g main.c node.c type.c llist.c llist_node.c symbol_table.c semantic_error.c -lfl -ly -o bin/splc
 assert: test.c
 	$(CC) -g test.c type.c -o bin/test
 	./bin/test

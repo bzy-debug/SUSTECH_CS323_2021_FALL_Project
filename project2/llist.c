@@ -67,13 +67,24 @@ int llist_concatenate(llist* left, llist* right) {
 }
 
 llist_node* llist_get_by_key(llist* llist, char* key) {
-    llist_node* cur = llist->head->next;
-    while (cur != llist->tail && strcmp(cur->key, key) != 0){
-        cur = cur->next;
+    llist_node* cur = llist->tail->prev;
+    while (cur != llist->head && strcmp(cur->key, key) != 0){
+        cur = cur->prev;
     }
-    if(cur == llist->tail)
+    if(cur == llist->head)
         return NULL;
     return cur;
+}
+
+int llist_duplicate(llist* llist, char* key) {
+    int count = 0;
+    llist_node* cur = llist->tail->prev;
+    while (cur != llist->head){
+        if(strcmp(cur->key, key) == 0)
+            count ++;
+        cur = cur->prev;
+    }
+    return count;
 }
 
 llist_node* llist_get_by_index(llist* llist, int index) {
@@ -87,10 +98,16 @@ llist_node* llist_get_by_index(llist* llist, int index) {
     return cur;
 }
 
-int llist_update(llist* llist, void* key, void* new_value) {
+int llist_update(llist* llist, char* key, void* new_value) {
     llist_get_by_key(llist, key)->value = new_value;
     return 0;
 }
+
+int llist_contains(llist* llist, char* key) {
+    void* value = llist_get_by_key(llist, key);
+    return value != NULL; 
+}
+
 
 void llist_print(const llist* llist) {
     llist_node* cur = llist->head->next;
@@ -101,4 +118,14 @@ void llist_print(const llist* llist) {
         printf("%s ", cur->key);
         cur = cur->next;
     }
+}
+
+int llist_remove_by_key(llist* llist, char* key) {
+    if(llist_contains(llist, key)) {
+        llist_node* removed = llist_get_by_key(llist, key);
+        removed->prev->next = removed->next;
+        removed->next->prev = removed->prev;
+        return 0;
+    }
+    return 1;
 }

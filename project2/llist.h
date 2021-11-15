@@ -25,7 +25,14 @@ llist_node* llist_get_by_key(llist*, char* key);
 
 llist_node* llist_get_by_index(llist*, int idex);
 
-int llist_update(llist*, void* key, void* new_value);
+int llist_update(llist*, char* key, void* new_value);
 
 void llist_print(const llist* llist);
+
+int llist_contains(llist* llist, char* key);
+
+int llist_remove_by_key(llist* llist, char* key);
+
+int llist_duplicate(llist* llist, char* key);
+
 #endif

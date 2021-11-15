@@ -1,4 +1,5 @@
 #include "type.h"
+#include "llist.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -97,6 +98,16 @@ void addFuncParameter(struct Type *function, struct Type *type, char *name) {
 
 void setFuncReturnType(struct Type *func, struct Type *returnType) {
   func->function->returnType = returnType;
+}
+
+llist* get_func_parameter(MyType* function) {
+  llist* parameters = create_llist();
+  MyParameterType* para_type = function->function->parameters;
+  while (para_type != NULL) {
+    llist_append(parameters, create_node(para_type->name, para_type->type));
+    para_type = para_type->next;
+  }
+  return parameters;
 }
 
 int typeEqual(struct Type* t1, struct Type* t2) {

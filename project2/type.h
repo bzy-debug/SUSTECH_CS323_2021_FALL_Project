@@ -1,5 +1,6 @@
 #ifndef TYPE_H
 #define TYPE_H
+#include "llist.h"
 
 enum Category { PRIMITIVE, ARRAY, STRUCTURE, FUNCTION };
 enum Primitive { INTEGER, FLOATING, CHARACTER };
@@ -56,6 +57,8 @@ void addArrayType(struct Type *array, struct Type *type);
 void addStructField(struct Type *structure, struct Type *field, char *name);
 
 void addFuncParameter(struct Type *function, struct Type *param, char *name);
+
+llist* get_func_parameter(MyType* function);
 
 void setFuncReturnType(struct Type *func, struct Type *returnType);
 

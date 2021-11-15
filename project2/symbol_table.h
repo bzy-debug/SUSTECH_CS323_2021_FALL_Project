@@ -21,4 +21,13 @@ llist* get_symbol_node_list_from_extdef(node* extdef, llist* symbol_table);
 llist_node* get_symbol_node_from_fundec(node* fundec, MyType* return_type, llist* symbol_table);
 
 llist_node* get_symbol_node_from_paramdec(node* paramdec, llist* symbol_table);
+
+MyType* get_type_by_key(char* key, llist* symbol_table_stack);
+
+int symbol_table_duplicate(llist* symbol_table_stack, char* key);
+
+int symbol_table_contains_func(llist* symbol_table_stack, char* key);
+
+MyType* get_exp_type(node* exp, llist* symbol_table_stack);
+
 #endif
