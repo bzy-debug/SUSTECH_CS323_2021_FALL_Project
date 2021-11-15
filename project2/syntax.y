@@ -8,7 +8,6 @@
     #include<assert.h>
     void yyerror(const char*);
     node* root;
-    llist* symbol_table;
 %}
 %union {
     node* type_node;
@@ -42,6 +41,8 @@ Program:
         $$->node_type = nterm;
         $$->val.ntermval = "Program";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
         root = $$;
     }
@@ -53,6 +54,8 @@ ExtDefList:
         $$->node_type = nterm;
         $$->val.ntermval = "ExtDefList";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | %empty {
@@ -70,6 +73,8 @@ ExtDef:
         $$->node_type = nterm;
         $$->val.ntermval = "ExtDef";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Specifier SEMI{
@@ -77,6 +82,8 @@ ExtDef:
         $$->node_type = nterm;
         $$->val.ntermval = "ExtDef";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | Specifier FunDec CompSt{
@@ -84,6 +91,8 @@ ExtDef:
         $$->node_type = nterm;
         $$->val.ntermval = "ExtDef";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | error FunDec CompSt { printf("Missing specifier\n"); }
@@ -96,6 +105,8 @@ ExtDecList:
         $$->val.ntermval = "ExtDecList";
         $$->line = @$.first_line;
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | VarDec COMMA ExtDecList{
@@ -103,6 +114,8 @@ ExtDecList:
         $$->node_type = nterm;
         $$->val.ntermval = "ExtDecList";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     ;
@@ -114,6 +127,8 @@ Specifier:
         $$->node_type = nterm;
         $$->val.ntermval = "Specifier";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | StructSpecifier{
@@ -121,6 +136,8 @@ Specifier:
         $$->node_type = nterm;
         $$->val.ntermval = "Specifier";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     ;
@@ -130,6 +147,8 @@ StructSpecifier: STRUCT ID LC DefList RC{
         $$->node_type = nterm;
         $$->val.ntermval = "StructSpecifier";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 5, $1, $2, $3, $4, $5);
     }
     | STRUCT ID{                    //type checking
@@ -137,6 +156,8 @@ StructSpecifier: STRUCT ID LC DefList RC{
         $$->node_type = nterm;
         $$->val.ntermval = "StructSpecifier";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     ;
@@ -147,6 +168,8 @@ VarDec: ID{
         $$->node_type = nterm;
         $$->val.ntermval = "VarDec";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | VarDec LB INT RB{
@@ -154,6 +177,8 @@ VarDec: ID{
         $$->node_type = nterm;
         $$->val.ntermval = "VarDec";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 4, $1, $2, $3, $4);
     }
     | VarDec LB INT error {
@@ -166,6 +191,8 @@ FunDec: ID LP VarList RP{
         $$->node_type = nterm;
         $$->val.ntermval = "FunDec";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 4, $1, $2, $3, $4);
     }
     | ID LP RP{
@@ -173,6 +200,8 @@ FunDec: ID LP VarList RP{
         $$->node_type = nterm;
         $$->val.ntermval = "FunDec";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | ID LP VarList error { printf("Missing closing parenthesis ')'\n"); }
@@ -184,6 +213,8 @@ VarList: ParamDec COMMA VarList{
         $$->node_type = nterm;
         $$->val.ntermval = "VarList";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | ParamDec{
@@ -191,6 +222,8 @@ VarList: ParamDec COMMA VarList{
         $$->node_type = nterm;
         $$->val.ntermval = "VarList";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     ;
@@ -200,6 +233,8 @@ ParamDec: Specifier VarDec{
         $$->node_type = nterm;
         $$->val.ntermval = "ParamDec";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     ;
@@ -210,6 +245,8 @@ CompSt: LC DefList StmtList RC{
         $$->node_type = nterm;
         $$->val.ntermval = "CompSt";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 4, $1, $2, $3, $4);
     }
     ;
@@ -219,6 +256,8 @@ StmtList: Stmt StmtList{
         $$->node_type = nterm;
         $$->val.ntermval = "StmtList";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | %empty {
@@ -236,6 +275,8 @@ Stmt: Exp SEMI{
         $$->node_type = nterm;
         $$->val.ntermval = "Stmt";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | CompSt{
@@ -243,6 +284,8 @@ Stmt: Exp SEMI{
         $$->node_type = nterm;
         $$->val.ntermval = "Stmt";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | RETURN Exp SEMI{
@@ -250,6 +293,8 @@ Stmt: Exp SEMI{
         $$->node_type = nterm;
         $$->val.ntermval = "Stmt";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | RETURN Exp error { printf("Missing semicolon ';'\n"); }
@@ -258,6 +303,8 @@ Stmt: Exp SEMI{
         $$->node_type = nterm;
         $$->val.ntermval = "Stmt";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 5, $1, $2, $3, $4, $5);
     }
     | IF LP Exp RP Stmt ELSE Stmt{
@@ -265,6 +312,8 @@ Stmt: Exp SEMI{
         $$->node_type = nterm;
         $$->val.ntermval = "Stmt";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 7, $1, $2, $3, $4, $5, $6, $7);
     }
     | WHILE LP Exp RP Stmt{
@@ -272,6 +321,8 @@ Stmt: Exp SEMI{
         $$->node_type = nterm;
         $$->val.ntermval = "Stmt";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 5, $1, $2, $3, $4, $5);
     }
     ;
@@ -282,6 +333,8 @@ DefList: Def DefList{
         $$->node_type = nterm;
         $$->val.ntermval = "DefList";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | %empty {
@@ -297,6 +350,8 @@ Def: Specifier DecList SEMI{
         $$->node_type = nterm;
         $$->val.ntermval = "Def";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Specifier DecList error {printf("Missing semicolon ';'\n");}
@@ -308,6 +363,8 @@ DecList: Dec{
         $$->node_type = nterm;
         $$->val.ntermval = "DecList";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | Dec COMMA DecList{
@@ -315,6 +372,8 @@ DecList: Dec{
         $$->node_type = nterm;
         $$->val.ntermval = "DecList";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     ;
@@ -324,6 +383,8 @@ Dec: VarDec{
         $$->node_type = nterm;
         $$->val.ntermval = "Dec";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | VarDec ASSIGN Exp{            //TODO:type checking
@@ -331,6 +392,8 @@ Dec: VarDec{
         $$->node_type = nterm;
         $$->val.ntermval = "Dec";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     ;
@@ -341,6 +404,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp AND Exp{
@@ -348,6 +413,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp OR Exp{
@@ -355,6 +422,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp LT Exp{
@@ -362,6 +431,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp LE Exp{
@@ -369,6 +440,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp GT Exp{
@@ -376,6 +449,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp GE Exp{
@@ -383,6 +458,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp NE Exp{
@@ -390,6 +467,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp EQ Exp{
@@ -397,6 +476,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp PLUS Exp{
@@ -404,6 +485,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp MINUS Exp{
@@ -411,6 +494,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp MUL Exp{
@@ -418,6 +503,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp DIV Exp{
@@ -425,6 +512,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | LP Exp RP{
@@ -432,6 +521,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | MINUS Exp{
@@ -439,6 +530,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | NOT Exp{
@@ -446,6 +539,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | ID LP Args RP{
@@ -453,6 +548,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 4, $1, $2, $3, $4);
     }
     | ID LP RP{
@@ -460,6 +557,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | ID LP Args error{ printf("Missing closing parenthesis ')'\n");} 
@@ -469,6 +568,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 4, $1, $2, $3, $4);
     }
     | Exp LB Exp error {
@@ -479,6 +580,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | ID{
@@ -486,6 +589,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | INT{
@@ -493,6 +598,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | FLOAT{
@@ -500,6 +607,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | CHAR{
@@ -507,6 +616,8 @@ Exp: Exp ASSIGN Exp{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | INVALID_TOKEN
@@ -517,6 +628,8 @@ Args: Exp COMMA Args{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp{
@@ -524,6 +637,8 @@ Args: Exp COMMA Args{
         $$->node_type = nterm;
         $$->val.ntermval = "Exp";
         $$->line = @$.first_line;
+        $$->isempty = 0;
+        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     ;

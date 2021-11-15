@@ -17,7 +17,9 @@ void addchild(node* p,int num, ...){
     va_list valist;
     va_start(valist, num);
     for(int i=0; i<num; i++) {
-        llist_append(p->children, create_node(NULL, va_arg(valist, node*)));
+        node* child = va_arg(valist, node*);
+        child->pare = p;
+        llist_append(p->children, create_node(NULL, child));
     }
     va_end(valist);
 }

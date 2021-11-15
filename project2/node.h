@@ -25,9 +25,11 @@ typedef struct NODE
 {
     nodeType node_type;
     int isempty; // 0 not empty, 1 empty. for nterms
+    int isexplored;
     int line;
     nodeVal val;
     llist* children;
+    struct NODE* pare;
 } node;
 
 

@@ -52,6 +52,13 @@ llist_node* llist_pop(llist* llist) {
     return poping;
 }
 
+llist_node* llist_peak(llist* llist) {
+    if(llist->size == 0) {
+        return NULL;
+    }
+    return llist->tail->prev;
+}
+
 int llist_concatenate(llist* left, llist* right) {
     left->size += right->size;
     left->tail->prev->next = right->head->next;

@@ -8,17 +8,17 @@
 
 void print_symbol_table(llist* symbol_table);
 
-MyType* get_type_from_specifier(node* specifier);
+MyType* get_type_from_specifier(node* specifier, llist* symbol_table);
 
-MyType* get_struct_type(node* struct_specifier);
+MyType* get_struct_type(node* struct_specifier, llist* symbol_table);
 
-llist_node* get_symbol_node_from_vardec(node* vardec, MyType* sepecifier_type, MyType* array_type);
+llist_node* get_symbol_node_from_vardec(node* vardec, MyType* sepecifier_type, MyType* array_type, llist* symbol_table);
 
-llist* get_symbol_node_list_from_def(node* def);
+llist* get_symbol_node_list_from_def(node* def, llist* symbol_table);
 
-llist* get_symbol_node_list_from_extdef(node* extdef);
+llist* get_symbol_node_list_from_extdef(node* extdef, llist* symbol_table);
 
-llist_node* get_symbol_node_from_fundec(node* fundec, MyType* return_type);
+llist_node* get_symbol_node_from_fundec(node* fundec, MyType* return_type, llist* symbol_table);
 
-llist_node* get_symbol_node_from_paramdec(node* paramdec);
+llist_node* get_symbol_node_from_paramdec(node* paramdec, llist* symbol_table);
 #endif

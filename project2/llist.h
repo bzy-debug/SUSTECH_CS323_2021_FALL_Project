@@ -17,6 +17,8 @@ int llist_append(llist*, llist_node*);
 
 llist_node* llist_pop(llist*);
 
+llist_node* llist_peak(llist* llist);
+
 int llist_concatenate(llist*, llist*);
 
 llist_node* llist_get_by_key(llist*, char* key);
