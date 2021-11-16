@@ -88,7 +88,7 @@ void semantic_check(node* grammar_tree, llist* symbol_table_stack) {
         }
 
         else if(pare->node_type == nterm && strcmp(pare->val.ntermval,"Def") == 0 && pare->isexplored == 0) {
-            llist* t = get_symbol_node_list_from_def(pare, symbol_table);
+            llist* t = get_symbol_node_list_from_def(pare, symbol_table, symbol_table_stack);
             
             llist_node* cur = t->head->next;
             while (cur != t->tail)
@@ -104,37 +104,13 @@ void semantic_check(node* grammar_tree, llist* symbol_table_stack) {
         }
 
         else if (pare->node_type == nterm && strcmp(pare->val.ntermval,"ExtDef") == 0 && pare->isexplored == 0) {
-            llist* t = get_symbol_node_list_from_extdef(pare, symbol_table);
+            llist* t = get_symbol_node_list_from_extdef(pare, symbol_table, symbol_table_stack);
             llist_concatenate(symbol_table, t);
             // print_symbol_table(symbol_table);
         }
 
-        else if (pare->node_type == nterm && strcmp(pare->val.ntermval, "Exp") == 0) {
-            node* first_child = (node*) pare->children->head->next->value;
-            if(pare->children->size == 1 && first_child->node_type == eID) {
-                char* id = first_child->val.idval;
-                pare->type = get_type_by_key(id, symbol_table_stack);
-                if(pare->type == NULL) {
-                    semantic_error(1, pare->line, id);
-                }
-            }
-            else if (pare->children->size >=3 && first_child->node_type == eID) { 
-                // function call
-                char* func_id = first_child->val.idval;
-                MyType* func_type = get_type_by_key(func_id, symbol_table_stack);
-                if(func_type == NULL) {
-                    semantic_error(1, pare->line, func_id);
-                    continue;
-                }
-                pare->type = func_type->function->returnType;
-            }
-            else if (pare->children->size == 1 && first_child->node_type == eINT) {
-                pare->type = createType("int");
-            }
-            else if (pare->children->size == 1 && first_child->node_type == eFLOAT) {
-                pare->type = createType("float");
-            }
-
+        else if (pare->node_type == nterm && strcmp(pare->val.ntermval, "Exp") == 0 && pare->isexplored == 0) {
+            get_exp_type(pare, symbol_table_stack);
         }
 
         llist_node* cur = pare->children->tail->prev;

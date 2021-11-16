@@ -5,11 +5,14 @@
 
 void print_node(node* n);
 
-node* create_grammar_node(nodeType nodeType, nodeVal val, int line) {
+node* create_grammar_node(nodeType nodeType, int line) {
     node* new_node = malloc(sizeof(node));
     new_node->node_type = nodeType;
-    new_node->val = val;
     new_node->line = line;
+    new_node->isempty = 0;
+    new_node->isexplored = 0;
+    new_node->left_or_right = 1;
+    return new_node;
 }
 
 void addchild(node* p,int num, ...){

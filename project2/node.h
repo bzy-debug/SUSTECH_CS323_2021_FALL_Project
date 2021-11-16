@@ -25,8 +25,9 @@ typedef union NODE_VAL
 typedef struct NODE
 {
     nodeType node_type;
-    int isempty; // 0 not empty, 1 empty. for nterms
-    int isexplored;
+    int isempty; // 0 not empty, 1 empty. for nterms. default is 0
+    int isexplored; // default is 0
+    int left_or_right; // 0 is left, 1 is right, default is 1
     int line;
     nodeVal val;
     MyType* type;
@@ -39,6 +40,6 @@ void addchild(node* ,int , ... );
 
 void print_tree(node*, int);
 
-node* create_grammar_node(nodeType nodeType, nodeVal val, int line);
+node* create_grammar_node(nodeType nodeType, int line);
 
 #endif

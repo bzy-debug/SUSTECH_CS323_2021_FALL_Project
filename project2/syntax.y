@@ -37,12 +37,8 @@
 Program:
     ExtDefList
     {
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Program";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
         root = $$;
     }
@@ -50,17 +46,12 @@ Program:
 
 ExtDefList:
     ExtDef ExtDefList{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "ExtDefList";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | %empty {
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "ExtDefList";
         $$->children = NULL;
         $$->isempty = 1;
@@ -69,30 +60,18 @@ ExtDefList:
 
 ExtDef:
     Specifier ExtDecList SEMI{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "ExtDef";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Specifier SEMI{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "ExtDef";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | Specifier FunDec CompSt{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "ExtDef";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | error FunDec CompSt { printf("Missing specifier\n"); }
@@ -100,22 +79,12 @@ ExtDef:
 
 ExtDecList: 
     VarDec{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "ExtDecList";
-        $$->line = @$.first_line;
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | VarDec COMMA ExtDecList{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
-        $$->val.ntermval = "ExtDecList";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
+        $$ = create_grammar_node(nterm, @$.first_line);
         addchild($$, 3, $1, $2, $3);
     }
     ;
@@ -123,62 +92,38 @@ ExtDecList:
 /* specifier */
 Specifier: 
     TYPE {
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Specifier";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | StructSpecifier{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Specifier";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     ;
 
 StructSpecifier: STRUCT ID LC DefList RC{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "StructSpecifier";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 5, $1, $2, $3, $4, $5);
     }
-    | STRUCT ID{                    //type checking
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+    | STRUCT ID{
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "StructSpecifier";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     ;
 
 /* declarator */
 VarDec: ID{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "VarDec";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | VarDec LB INT RB{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "VarDec";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 4, $1, $2, $3, $4);
     }
     | VarDec LB INT error {
@@ -187,21 +132,13 @@ VarDec: ID{
     ;
 
 FunDec: ID LP VarList RP{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "FunDec";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 4, $1, $2, $3, $4);
     }
     | ID LP RP{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "FunDec";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | ID LP VarList error { printf("Missing closing parenthesis ')'\n"); }
@@ -209,149 +146,94 @@ FunDec: ID LP VarList RP{
     ;
 
 VarList: ParamDec COMMA VarList{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "VarList";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | ParamDec{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "VarList";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     ;
 
 ParamDec: Specifier VarDec{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "ParamDec";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     ;
 
 /* Statement */
 CompSt: LC DefList StmtList RC{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "CompSt";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 4, $1, $2, $3, $4);
     }
     ;
 
 StmtList: Stmt StmtList{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "StmtList";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | %empty {
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "StmtList";
-        $$->line = @$.first_line;
         $$->children = NULL;
         $$->isempty = 1;
     }
     ;
 
 Stmt: Exp SEMI{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Stmt";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | CompSt{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Stmt";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | RETURN Exp SEMI{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Stmt";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | RETURN Exp error { printf("Missing semicolon ';'\n"); }
     | IF LP Exp RP Stmt %prec LOWERELSE{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Stmt";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 5, $1, $2, $3, $4, $5);
     }
     | IF LP Exp RP Stmt ELSE Stmt{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Stmt";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 7, $1, $2, $3, $4, $5, $6, $7);
     }
     | WHILE LP Exp RP Stmt{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Stmt";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 5, $1, $2, $3, $4, $5);
     }
     ;
 /* local definition */
 
 DefList: Def DefList{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "DefList";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | %empty {
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "DefList";
         $$->children = NULL;
         $$->isempty = 1;
     }
     ;
 Def: Specifier DecList SEMI{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Def";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Specifier DecList error {printf("Missing semicolon ';'\n");}
@@ -359,286 +241,169 @@ Def: Specifier DecList SEMI{
     ;
 
 DecList: Dec{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "DecList";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | Dec COMMA DecList{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "DecList";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     ;
 
 Dec: VarDec{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Dec";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
-    | VarDec ASSIGN Exp{            //TODO:type checking
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+    | VarDec ASSIGN Exp{
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Dec";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     ;
 
 /* Expression */
 Exp: Exp ASSIGN Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp AND Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp OR Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp LT Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp LE Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp GT Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp GE Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp NE Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp EQ Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp PLUS Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp MINUS Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp MUL Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | Exp DIV Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | LP Exp RP{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | MINUS Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | NOT Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 2, $1, $2);
     }
     | ID LP Args RP{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 4, $1, $2, $3, $4);
     }
     | ID LP RP{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | ID LP Args error{ printf("Missing closing parenthesis ')'\n");} 
     | ID LP error { printf("Missing closing parenthesis ')'\n"); }
     | Exp LB Exp RB{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
+        $$->left_or_right = 0;
         addchild($$, 4, $1, $2, $3, $4);
     }
     | Exp LB Exp error {
         printf("Missing closing bracket ']'\n");
     }
     | Exp DOT ID{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
+        $$->left_or_right = 0;
         addchild($$, 3, $1, $2, $3);
     }
     | ID{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
+        $$->left_or_right = 0;
         addchild($$, 1, $1);
     }
     | INT{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | FLOAT{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | CHAR{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
+        $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
         addchild($$, 1, $1);
     }
     | INVALID_TOKEN
     | Exp INVALID_TOKEN Exp 
     ;
 Args: Exp COMMA Args{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
-        $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
+        $$ = create_grammar_node(nterm, @$.first_line);
+        $$->val.ntermval = "Args";
         addchild($$, 3, $1, $2, $3);
     }
     | Exp{
-        $$ = malloc(sizeof(node));
-        $$->node_type = nterm;
-        $$->val.ntermval = "Exp";
-        $$->line = @$.first_line;
-        $$->isempty = 0;
-        $$->isexplored = 0;
+        $$ = create_grammar_node(nterm, @$.first_line);
+        $$->val.ntermval = "Args";
         addchild($$, 1, $1);
     }
     ;
