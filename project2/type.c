@@ -112,6 +112,9 @@ llist* get_func_parameter(MyType* function) {
 
 int typeEqual(struct Type* t1, struct Type* t2) {
   if(t1 == NULL || t2 == NULL) {
+    if(t1 == NULL && t2 == NULL) {
+      return 0;
+    }
     return -1;
   }
 

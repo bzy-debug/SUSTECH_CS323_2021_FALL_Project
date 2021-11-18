@@ -277,8 +277,7 @@ MyType* get_exp_type(node* exp, llist* symbol_table_stack) {
         return exp->type;
     }
     else if (exp->children->size >=3 && first_child->node_type == eID) { 
-        // function call
-        // TODO
+
         char* func_id = first_child->val.idval;
         MyType* func_type = get_type_by_key(func_id, symbol_table_stack);
         if(func_type == NULL) {
@@ -289,7 +288,7 @@ MyType* get_exp_type(node* exp, llist* symbol_table_stack) {
         else if (func_type->category != FUNCTION){
             semantic_error(11, exp->line, func_id);
             exp->type = NULL;
-            return NULL;
+            return exp->type;
         }
 
         else if(exp->children->size == 3) {
@@ -310,6 +309,7 @@ MyType* get_exp_type(node* exp, llist* symbol_table_stack) {
             exp->type = func_type->function->returnType;
             return exp->type;
         }
+
     }
     else if (exp->children->size == 1 && first_child->node_type == eINT) {
         exp->type = createType("int");
@@ -320,10 +320,15 @@ MyType* get_exp_type(node* exp, llist* symbol_table_stack) {
         return exp->type;
     }
     else if (exp->children->size == 2){
+        node* second_child = (node*) exp->children->head->next->next->value;
         if (first_child->node_type == eNOT) {
             //boolean operation
+            if (second_child->node_type != eINT) {
+                semantic_error(7, exp->line, "");
+                exp->type = NULL;
+                return exp->type;
+            }
         }
-        node* second_child = (node*) exp->children->head->next->next->value;
         exp->type = get_exp_type(second_child, symbol_table_stack);
         return exp->type;
     }
@@ -369,7 +374,8 @@ MyType* get_exp_type(node* exp, llist* symbol_table_stack) {
             if (second_child->node_type == eASSIGN) {
                 if(left_exp->left_or_right == 1) {
                     semantic_error(6, exp->line, "");
-                    return NULL;
+                    exp->type = NULL;
+                    return exp->type;
                 }
                 if(typeEqual(left_exp->type, right_exp->type) == 0) {
                     exp->type = left_exp->type;
@@ -378,22 +384,28 @@ MyType* get_exp_type(node* exp, llist* symbol_table_stack) {
                 else {
                     semantic_error(5, exp->line, "");
                     exp->type = NULL;
-                    return NULL;
+                    return exp->type;
                 }
             }
             else if (second_child->node_type == eAND || second_child->node_type == eOR) {
-                //TODOboolean operation
+                if (left_exp->node_type != eINT || right_exp->node_type != eINT){
+                    semantic_error(7, exp->line, "");
+                    exp->type = NULL;
+                    return exp->type;
+                }
+
             }
             else {
                 if(left_exp->type != NULL && right_exp->type != NULL && 
-                left_exp->type->category == PRIMITIVE && right_exp->type->category == PRIMITIVE) {
+                left_exp->type->category == PRIMITIVE && typeEqual(left_exp->type, right_exp->type) == 0) {
                     //TODO
                     exp->type = left_exp->type;
                     return exp->type;
                 }
                 else {
                     semantic_error(7, exp->line, "");
-                    return NULL;
+                    exp->type = NULL;
+                    return exp->type;
                 }
             }
             exp->type = get_exp_type(first_child, symbol_table_stack);
@@ -431,4 +443,9 @@ MyType* get_exp_type(node* exp, llist* symbol_table_stack) {
             return exp->type;
         }
     }
+}
+
+MyType* get_current_function(llist* symbol_table_stack) {
+    llist* global_symbol_table = (llist*) symbol_table_stack->head->next->value;
+    return (MyType*) global_symbol_table->tail->prev->value;
 }

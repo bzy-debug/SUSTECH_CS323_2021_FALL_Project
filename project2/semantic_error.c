@@ -23,7 +23,10 @@ void semantic_error (int type, int line, char* info) {
         printf("Error type %d at Line %d: left side in assignment is rvalue\n", type, line);
         break;
     case 7:
-        printf("Error type %d at Line %d: binary operation on non-number variables\n", type, line);
+        printf("Error type %d at Line %d: unmatching operands\n", type, line);
+        break;
+    case 8:
+        printf("Error type %d at Line %d: incompatiable return type\n", type, line);
         break;
     case 9:
         printf("Error type %d at Line %d: invalid argument for %s\n",type, line, info);

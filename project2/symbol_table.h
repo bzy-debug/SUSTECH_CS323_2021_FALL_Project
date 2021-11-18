@@ -30,6 +30,8 @@ int symbol_table_contains_func(llist* symbol_table_stack, char* key);
 
 int symbol_table_contains(llist* symbol_table_stack, char * key);
 
+MyType* get_current_function(llist* symbol_table_stack);
+
 MyType* get_exp_type(node* exp, llist* symbol_table_stack);
 
 #endif
