@@ -1,0 +1,16 @@
+struct a{
+  int c;
+  float b;
+};
+
+struct x{
+  float y;
+  int x;
+};
+int test_1()
+{
+  struct a m;
+  struct x n;
+  m = n;
+  return 0;
+}
