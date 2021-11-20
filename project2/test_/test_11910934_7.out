@@ -1,0 +1,4 @@
+Error type 13 at Line 9: access members of a non-structure variable
+Error type 5 at Line 9: unmatching type on both sides of assignment
+Error type 14 at Line 10: access an undefined structure member
+Error type 5 at Line 10: unmatching type on both sides of assignment
