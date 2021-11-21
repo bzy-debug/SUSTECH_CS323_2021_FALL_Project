@@ -1,0 +1,15 @@
+struct x{
+  int x;
+  float y;
+};
+int test_3()
+{
+  struct x m;
+  int n;
+  n=m;
+  if(1>0){
+      struct x n;
+      n=m;
+  }
+  return 0;
+}

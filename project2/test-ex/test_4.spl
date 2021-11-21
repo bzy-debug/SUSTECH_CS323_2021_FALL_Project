@@ -1,0 +1,11 @@
+int test_4()
+{
+  float m;
+  int n;
+  n=m;
+  while(1>0){
+      float n;
+      n=m;
+  }
+  return 0;
+}
