@@ -1,0 +1,3 @@
+Error type 15 at Line 9: redefine struct: node
+Error type 14 at Line 19: access an undefined structure member
+Error type 5 at Line 19: unmatching type on both sides of assignment

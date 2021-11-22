@@ -1,0 +1,3 @@
+Error type 9 at Line 8: invalid argument number for sum, expect 2, got 3
+Error type 10 at Line 9: indexing on non-array variable
+Error type 5 at Line 9: unmatching type on both sides of assignment

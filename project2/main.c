@@ -17,7 +17,7 @@ int main(int argc, char**argv) {
     char* outa = malloc(sizeof(char)*(l+1));
     strcpy(outa, argv[1]);
     outa[l-3]='o'; outa[l-2]='u'; outa[l-1]='t';
-    // freopen(outa, "w", stdout);
+    freopen(outa, "w", stdout);
     FILE *f = fopen(argv[1], "r");
     if (!f){
         perror(argv[1]);

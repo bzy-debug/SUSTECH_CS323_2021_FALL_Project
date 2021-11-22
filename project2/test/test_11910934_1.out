@@ -1,0 +1,4 @@
+Error type 1 at Line 4: undefined variable: y
+Error type 7 at Line 4: unmatching operands
+Error type 2 at Line 5: undefined function: get
+Error type 3 at Line 6: redefine variable: t

@@ -1,0 +1,11 @@
+float sum(float x,float y){
+  return x+y;
+}
+int test_11910934_6()
+{
+  float a = 0.5;
+  float b = 0.5;
+  int k;
+  k = sum(a,b);
+  return a;
+}
