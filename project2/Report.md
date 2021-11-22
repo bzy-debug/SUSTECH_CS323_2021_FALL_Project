@@ -94,8 +94,113 @@ we will first get the type of `id` from symbol table. If the type is not struct,
    }
    ```
 
-![image-20211122180719560](/home/bzy/snap/typora/42/.config/Typora/typora-user-images/image-20211122180719560.png) 
+   ![image-20211122180719560](/home/bzy/snap/typora/42/.config/Typora/typora-user-images/image-20211122180719560.png) 
 
-​	In our output, we report an extra error. The reason is that the type of x3 is unknown and it is illegal to add an int with unknown type.
+   In our output, we report an extra error. The reason is that the type of x3 is unknown and it is illegal to add an int with unknown type.
 
 2. test_2_r04.spl
+
+   ```c
+   int compare(int x, int y)
+   {
+     if (x > y) {return 1;}
+     else if (y > x) {return -1;}
+     else {return 0;}
+   }
+   float compare(int a, int b)
+   {
+     if (b > a) {return -1.0;}
+     if (b == a) {return 0.0;}
+     return 1.0;
+   }
+   int test_2_r04()
+   {
+     return compare(7, 8);
+   }
+   ```
+
+   ![image-20211122185318128](/home/bzy/snap/typora/42/.config/Typora/typora-user-images/image-20211122185318128.png)
+
+   In our output, we report an extra error. The reason is that we resolve the function compare as the latest definition, which is defined at line 7.
+
+3. test_2_r10.spl
+
+   ```c
+   struct Person
+   {
+     int name;
+     int friends[10];
+   };
+   int test_2_r10()
+   {
+     struct Person tom;
+     struct Person people[10];
+     int i = 0;
+     while (i < 10)
+     {
+       people[i].name = i;
+       tom.friends[i] = i;
+       i = i + 1;
+     }
+     return tom.name[i-1];
+   }
+   ```
+
+   ![image-20211122185634224](/home/bzy/snap/typora/42/.config/Typora/typora-user-images/image-20211122185634224.png)
+
+   In our output, we report an extra error. The reason is that `tom.name[i-1]` is unknown, and unknown is incompatible with `int`.
+
+4. test_2_r11.spl
+
+   ```c
+   int compare1(int x, int y)
+   {
+     if (x > y) {return 1;}
+     else if (y > x) {return -1;}
+     else {return 0;}
+   }
+   int test_2_r11(int i, int m, int n)
+   {
+     int compare2 = 10;
+     if (i == 0)
+     {
+       return compare1(m, n);
+     }
+     else
+     {
+       return compare2(m, n);
+     }
+   }
+   ```
+
+   ![image-20211122185925050](/home/bzy/snap/typora/42/.config/Typora/typora-user-images/image-20211122185925050.png)
+
+   In our output, we report an extra error. The reason is that `compare2(m, n)` is unknown, and unknown is incompatible with `int`.
+
+5. test_2_r12.spl
+
+   ```c
+   int test_2_r12()
+   {
+     float arr1[10];
+     float arr2[10];
+     float a = 1.1;
+     int i = 0;
+     while (i < 10)
+     {
+       arr1[i] = a;
+       a = a * a;
+     }
+     i = 0;
+     while (i < 10)
+     {
+       arr2[arr1[i]] = a;
+     }
+     return 0;
+   }
+   ```
+
+   ![image-20211122190129008](/home/bzy/snap/typora/42/.config/Typora/typora-user-images/image-20211122190129008.png)
+
+   In our output, we do not report the mismatching error. The reason is that we guess that the developer wants to access the array `arr2`. Therefore, although his access is illegal, we still make the type of  `arr2[arr1[i]]` be `float`.
+
