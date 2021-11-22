@@ -1,1 +1,1 @@
-# Directory for project2
+# Directory for projects of CS323
