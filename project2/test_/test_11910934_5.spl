@@ -1,8 +1,0 @@
-int test_11910934_5()
-{
-  int x1 = 5;
-  int x4 = x1 + y;
-  float t =  get();
-  int t = 5;
-  return 0;
-}
