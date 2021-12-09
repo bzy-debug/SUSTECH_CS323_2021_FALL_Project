@@ -350,7 +350,7 @@ Exp: Exp ASSIGN Exp{
         $$->val.ntermval = "Exp";
         addchild($$, 4, $1, $2, $3, $4);
     }
-    | WRITE LP Args RP {
+    | WRITE LP Exp RP {
         $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
         addchild($$, 4, $1, $2, $3, $4);
