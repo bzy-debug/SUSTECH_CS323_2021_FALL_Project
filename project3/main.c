@@ -6,9 +6,25 @@
 #include"type.h"
 #include"symbol_table.h"
 #include"semantic_error.h"
+#include"inter_code.h"
+#include<stdarg.h>
 
 void generate_grammar_tree(FILE *);
 void semantic_check(node* grammar_tree, llist* symbol_table);
+inter_code*  generate_IR(node* grammar_tree);
+inter_code* translate_Exp(node* Exp, char* place);
+inter_code* translate_cond_Exp(node* Exp,int  lb1,int  lb2);
+inter_code* translate_Stmt(node* Stmt);
+inter_code* translate_Arg(node* Arg,llist* arg_list);
+inter_code* translate_FunDec(node* Fundec);
+inter_code* translate_VarList(node* VarList,inter_code* arg_list);
+
+
+
+inter_code* ir_concatenate(int num,...);
+
+char* new_place();
+int  new_lable();
 
 int main(int argc, char**argv) {
     if (argc <= 1)
@@ -25,6 +41,7 @@ int main(int argc, char**argv) {
     }
 
     generate_grammar_tree(f);
+    generate_IR(root);
     fclose(f);
 
     if(iserror == 0){
@@ -33,7 +50,7 @@ int main(int argc, char**argv) {
     else
         return 1;
 
-    // llist* symbol_table_stack = create_llist();     //value: symbol_table
+    llist* symbol_table_stack = create_llist();     //value: symbol_table
     // semantic_check(root, symbol_table_stack);
 
     // llist_node* cur = symbol_table_stack->head->next;
@@ -133,4 +150,304 @@ void semantic_check(node* grammar_tree, llist* symbol_table_stack) {
             cur = cur->prev;
         }
     } 
+}
+
+inter_code* generate_IR(node* grammar_tree){
+
+    llist* stack = create_llist(NULL);
+    llist_append(stack, create_node(NULL, grammar_tree));
+    while (stack->size >= 1)
+    {
+        node* pare = (node*)llist_pop(stack)->value;
+        if (pare->node_type == nterm && strcmp(pare->val.ntermval, "Stmt") == 0) {
+             inter_code*  ir = translate_Stmt(pare);
+            if (ir != NULL){
+                print_code(ir);
+            }
+            
+        }else if (pare->node_type == nterm && strcmp(pare->val.ntermval, "FunDec") == 0) {
+            translate_FunDec(pare);
+        }
+
+        
+        if(pare->isempty || pare->children == NULL)   continue;
+
+        llist_node* cur = pare->children->tail->prev;
+        while (cur != pare->children->head)
+        {
+            llist_append(stack, create_node(NULL, cur->value));
+            cur = cur->prev;
+        }
+    } 
+}
+
+inter_code* translate_Exp(node* Exp, char* place){
+
+        node* pare = (node*)Exp->children->head->next->value;
+
+        if(pare->node_type == eINT) {
+            int value = pare->val.intval;
+
+            return cnt_ic(cASSIGN, 2,cnt_op_str(VARIABLE,place), cnt_op_int(CONSTANT, value));
+        }
+        else if(pare->node_type == eID&& pare->pare->children->size == 1) {
+            char* value = pare->val.idval;
+            return cnt_ic(cASSIGN, 2,cnt_op_str(VARIABLE,place), cnt_op_str(VARIABLE, value));
+        }
+        else if(pare->node_type ==nterm&& strcmp(pare->val.ntermval, "Exp") == 0 && pare->pare->children->size == 3) {
+            node* second_node = (node*)pare->pare->children->head->next->next->value;
+            node* third_node =  (node*)pare->pare->children->head->next->next->next->value;
+            if(second_node->node_type == eASSIGN){
+                 char* value = pare->val.idval;
+                 char* tp= new_place();
+                 inter_code* code1 = translate_Exp(third_node,tp);
+                 inter_code* code2 = cnt_ic(cASSIGN, 2,cnt_op_str(VARIABLE,value), cnt_op_str(VARIABLE,tp));
+                 inter_code* code3 = cnt_ic(cASSIGN, 2,cnt_op_str(VARIABLE,place), cnt_op_str(VARIABLE,value));
+                 return code1;
+            }
+            else if(second_node->node_type == ePLUS){
+                char* t1= new_place();
+                char* t2 = new_place();
+                inter_code* code1 = translate_Exp(pare,t1);
+                inter_code* code2 = translate_Exp(pare,t2);
+                inter_code* code3 = cnt_ic(cADD, 3, cnt_op_str(VARIABLE, t1), cnt_op_str(VARIABLE, t2), cnt_op_str(VARIABLE,place));
+                return code1;
+            } 
+        }else if(pare->node_type ==eMINUS && pare->pare->children->size == 2) {
+            node* second_node = (node*)pare->pare->children->head->next->next->value;
+            if(second_node->node_type ==nterm&& strcmp(second_node->val.ntermval, "Exp") == 0){
+                char* tp = new_place();
+                inter_code* code1 = translate_Exp(second_node, tp);
+                inter_code* code2 = cnt_ic(cSUB, 3, cnt_op_int(CONSTANT, 0), cnt_op_str(VARIABLE, tp), cnt_op_str(VARIABLE,place));
+                return code1;
+            }
+        }
+
+        //table 4
+        if(pare->node_type == eREAD){
+            return cnt_ic(cREAD,1,cnt_op_str(VARIABLE,place));
+        }else if(pare->node_type == eWRITE){
+            char* tp = new_place();
+            //TODO: debug write text not showing
+            node* exp_node = (node*)pare->pare->children->head->next->next->next->value;
+            return ir_concatenate(2, translate_Exp(exp_node,tp), cnt_ic(cWRITE,1,cnt_op_str(VARIABLE,tp)));
+        }else if(pare->node_type == eID&& Exp->children->size == 3){
+            char* value = pare->val.idval;
+            return cnt_ic(CALL,2,cnt_op_str(VARIABLE,place),cnt_op_str(oFUNCTION,value));
+        }else if(pare->node_type == eID&& Exp->children->size == 4){
+            node* args_node = (node*)pare->pare->children->head->next->next->next->value;
+
+            char* value = pare->val.idval;
+            llist* arg_list = create_llist();
+            inter_code* code1 = translate_Arg(args_node, arg_list);
+            inter_code* code2 = NULL;
+
+            llist_node* arg_head =  arg_list->head;
+            for (int i = 1; i < arg_list->size ; i++){
+                code2 = ir_concatenate(2, code2 , cnt_ic(ARG,1 ,cnt_op_str(VARIABLE, (char*)arg_head->value)));
+                arg_head = arg_head->next;
+            }
+            return ir_concatenate(3, code1 , code2 ,cnt_ic(CALL,2,cnt_op_str(VARIABLE, place),cnt_op_str(VARIABLE, value)));
+        }
+        //condi exp
+    int  lb1 = new_lable();
+    int  lb2 = new_lable();
+    inter_code* code0 = cnt_ic(cASSIGN, 2,cnt_op_str(VARIABLE, place), cnt_op_int(CONSTANT,0));
+    inter_code* code1 = translate_cond_Exp(pare, lb1, lb2);
+    inter_code* code2 = ir_concatenate(2, cnt_ic(DEF_LAB,1, cnt_op_int(LABEL,lb1)), cnt_ic(cASSIGN, 2,cnt_op_str(VARIABLE, place), cnt_op_int(CONSTANT,1)));
+    return ir_concatenate(4,code0 , code1 , code2 ,cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,lb2)) ) ;
+
+}
+
+//if nothing pare return: LABEL label-4:
+inter_code* translate_cond_Exp(node* Exp,int  lb_t,int  lb_f){
+    node* pare = (node*)Exp->children->head->next->value;
+    if(pare->node_type ==nterm&& strcmp(pare->val.ntermval, "Exp") == 0 && pare->pare->children->size == 3) {
+            node* second_node = (node*)pare->pare->children->head->next->next->value;
+            node* third_node =  (node*)pare->pare->children->head->next->next->next->value;
+            
+            if(second_node->node_type == eEQ){
+                 
+                char* t1= new_place();
+                char* t2= new_place();
+
+                 inter_code* code1 = translate_Exp(pare,t1);
+                 inter_code* code2 = translate_Exp(third_node,t2);
+                 inter_code* code3 =ir_concatenate(2, cnt_ic(cIF,4,cnt_op_str(VARIABLE,t1), rEQ ,cnt_op_str(VARIABLE,t2), cnt_op_int(LABEL,lb_t)),  cnt_ic(GOTO,1,cnt_op_int(LABEL,lb_f) ));
+                 return ir_concatenate(3,code1,code2,code3);
+            }
+            else if(second_node->node_type == eGE){
+                 
+                char* t1= new_place();
+                char* t2= new_place();
+
+                 inter_code* code1 = translate_Exp(pare,t1);
+                 inter_code* code2 = translate_Exp(third_node,t2);
+                 inter_code* code3 =ir_concatenate(2, cnt_ic(cIF,4,cnt_op_str(VARIABLE,t1), rGE ,cnt_op_str(VARIABLE,t2), cnt_op_int(LABEL,lb_t)),  cnt_ic(GOTO,1,cnt_op_int(LABEL,lb_f) ));
+                 return ir_concatenate(3,code1,code2,code3);
+            }else if(second_node->node_type == eLE){
+                 
+                char* t1= new_place();
+                char* t2= new_place();
+
+                 inter_code* code1 = translate_Exp(pare,t1);
+                 inter_code* code2 = translate_Exp(third_node,t2);
+                 inter_code* code3 =ir_concatenate(2, cnt_ic(cIF,4,cnt_op_str(VARIABLE,t1), eLE ,cnt_op_str(VARIABLE,t2), cnt_op_int(LABEL,lb_t)),  cnt_ic(GOTO,1,cnt_op_int(LABEL,lb_f) ));
+                 return ir_concatenate(3,code1,code2,code3);
+            }
+
+            else if(second_node->node_type == eAND){
+            int  lb1= new_lable();
+                inter_code* code1 = ir_concatenate(2, translate_cond_Exp(pare,lb1,lb_f), cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,lb1)));
+                inter_code* code2 = translate_cond_Exp(pare,lb_t,lb_f);
+                return ir_concatenate(2,code1,code2);
+            } 
+            else if(second_node->node_type == eOR){
+            int  lb1= new_lable();
+                inter_code* code1 = ir_concatenate(2, translate_cond_Exp(pare,lb_t,lb1), cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,lb1)));
+                inter_code* code2 = translate_cond_Exp(pare,lb_t,lb_f);
+                return ir_concatenate(2,code1,code2);
+            }
+
+
+    }else if(pare->node_type == eNOT) {
+        return translate_cond_Exp(Exp,lb_f,lb_t);
+    }
+
+    return cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,-4));
+}
+
+//if nothing pare return: LABEL label-3:
+inter_code* translate_Stmt(node* Stmt){
+    node* pare = (node*)Stmt->children->head->next->value;
+    if(pare->node_type ==nterm && strcmp(pare->val.ntermval, "Exp") == 0){
+        char* tp = new_place();
+        return translate_Exp(pare,tp);
+    }
+    else 
+    if(pare->node_type ==eRETURN){
+        node* second_node = (node*)pare->pare->children->head->next->next->value;
+
+        char* tp = new_place();
+        inter_code* code = translate_Exp(second_node, tp);
+        return ir_concatenate(2, code , cnt_ic(cRETURN,1 ,cnt_op_str(VARIABLE,tp)));
+
+    }else if(pare->node_type ==eIF&& pare->pare->children->size <= 6) {
+            node* exp_node = (node*)pare->pare->children->head->next->next->next->value;
+            node* stmt_node =  (node*)pare->pare->children->head->next->next->next->next->next->value;
+
+        int  lb1 = new_lable();
+        int  lb2 = new_lable();
+            inter_code* code1 = ir_concatenate(2, translate_cond_Exp(exp_node, lb1, lb2) , cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,lb1)));
+            inter_code* code2 = ir_concatenate(2, translate_cond_Exp(stmt_node, lb1, lb2) , cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,lb2)));
+            return ir_concatenate(2, code1 , code2);
+
+    }else if(pare->node_type ==eIF&& pare->pare->children->size >= 6) {
+            node* exp_node = (node*)pare->pare->children->head->next->next->next->value;
+            node* stmt_1_node =  (node*)pare->pare->children->head->next->next->next->next->next->value;
+            node* stmt_2_node =  (node*)pare->pare->children->head->next->next->next->next->next->next->next->value;
+
+        int  lb1 = new_lable();
+        int  lb2 = new_lable();
+        int  lb3 = new_lable();
+
+            inter_code* code1 = ir_concatenate(2, translate_cond_Exp(exp_node, lb1, lb2) , cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,lb1)));
+            inter_code* code2 = ir_concatenate(3, translate_Stmt(stmt_1_node) ,cnt_ic(GOTO,1,cnt_op_int(LABEL,lb3)) , cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,lb2)));
+            inter_code* code3 = ir_concatenate(2, translate_Stmt(stmt_2_node) , cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,lb3)));
+
+            return ir_concatenate(3, code1 , code2,code3);
+    }else if(pare->node_type ==eWHILE) {
+            node* exp_node = (node*)pare->pare->children->head->next->next->next->value;
+            node* stmt_node =  (node*)pare->pare->children->head->next->next->next->next->next->value;
+
+        int lb1 = new_lable();
+        int  lb2 = new_lable();
+        int  lb3 = new_lable();
+
+            inter_code* code1 = ir_concatenate(2,cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,lb1)), translate_cond_Exp(exp_node, lb2, lb3));
+            inter_code* code2 = ir_concatenate(3,cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,lb2)), translate_Stmt(exp_node),cnt_ic(GOTO,1,cnt_op_int(LABEL,lb1)));
+
+            return ir_concatenate(3, code1 , code2,cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,lb3)));
+    }
+
+    return cnt_ic(DEF_LAB,1,cnt_op_int(LABEL,-3)); 
+}
+
+inter_code* translate_Arg(node* Arg,llist* arg_list){
+    node* exp_node = (node*)Arg->children->head->next->value;
+    if(Arg->children->size == 1){
+        char* tp = new_place();
+        inter_code* code = translate_Exp(exp_node, tp);
+        llist_add_front(arg_list,create_node(tp,tp));
+        return code;
+    }else{
+        node* args_node = (node*)Arg->children->head->next->next->next->value;
+        char* tp = new_place();
+        inter_code* code1 = translate_Exp(exp_node, tp);
+        llist_add_front(arg_list,create_node(tp,tp));
+        inter_code* code2 = translate_Arg(args_node, arg_list);
+        return ir_concatenate(2,code1 ,code2);
+    }
+
+}
+
+inter_code* translate_FunDec(node* Fundec){
+    node* pare = (node*)Fundec->children->head->next->value;
+
+    if(Fundec->children->size == 3) {
+        char* value = pare->val.idval;
+        return cnt_ic( DEF_FUNC,1,cnt_op_str(oFUNCTION,value));
+    }else{
+        char* value = pare->val.idval;
+       inter_code* code1 =  cnt_ic( DEF_FUNC,1,cnt_op_str(oFUNCTION,value));
+
+        node* varlist_node = (node*)Fundec->children->head->next->next->next->value;
+       inter_code* code2 = NULL;
+       translate_VarList(varlist_node,code2);
+       return ir_concatenate(2,code1,code2);
+    }
+
+}
+
+inter_code* translate_VarList(node* VarList,inter_code* param_code){
+     node* param_node = (node*)VarList->children->head->next->value;
+     node* var_node = (node*)param_node->children->head->next->next->value;
+     node* id_node = (node*)var_node->children->head->next->value;
+
+    char* value = id_node->val.idval;
+    param_code = ir_concatenate(2,cnt_ic(PARAM,1,cnt_op_str(VARIABLE,value)),param_code);
+
+    if(VarList->children->size == 3) {
+        node* varlist_node = (node*)VarList->children->head->next->next->next->value;
+        translate_VarList(varlist_node,param_code);
+    }
+    return param_code;
+}
+
+
+char* new_place(){
+    //TODO
+    return "t3";
+}
+int  new_lable(){
+    //TODO
+    return 4;
+}
+
+inter_code* ir_concatenate(int num,...){
+//TODO
+    va_list codes;
+    va_start(codes,num);
+    while (num >1)
+    {
+        inter_code* code = va_arg(codes,inter_code*);
+        if (code!=NULL){
+            print_code(code);
+        }
+        num--;
+
+    }
+    va_end(codes);
+    return NULL;
+
 }
