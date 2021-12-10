@@ -3,6 +3,7 @@
 #include<string.h>
 #include<stdarg.h>
 #include<stdio.h>
+#include"llist.h"
 
 operand* cnt_op_int(op_kind kind, int op_val) {
     operand* new_op = malloc(sizeof(operand));
@@ -63,22 +64,22 @@ char* relop_to_string(relop rop) {
     char* rop_str = malloc(sizeof(char) * 3);
     switch (rop)
     {
-    case EQ:
+    case rEQ:
         strcpy(rop_str, "==");
         break;
-    case NE:
+    case rNE:
         strcpy(rop_str, "!=");
         break;
-    case LT:
+    case rLT:
         strcpy(rop_str, "<");
         break;
-    case GT:
+    case rGT:
         strcpy(rop_str, ">");
         break;
-    case LE:
+    case rLE:
         strcpy(rop_str, "<=");
         break;
-    case GE:
+    case rGE:
         strcpy(rop_str, ">=");
         break;
     default:
@@ -100,7 +101,7 @@ char* op_to_string(operand* op) {
         case LABEL:
             sprintf(op_str, "label%d", op->u.value);
             break;
-        case FUNCTION:
+        case oFUNCTION:
             op_str = op->u.func_name;
             break;
         default:
@@ -131,7 +132,7 @@ char* code_to_string(inter_code* code) {
         case GOTO:
             sprintf(code_str, "GOTO %s:", op_to_string(op));
             break;
-        case RETURN:
+        case cRETURN:
             sprintf(code_str, "RETURN %s:", op_to_string(op));
             break;
         case ARG:
@@ -140,13 +141,13 @@ char* code_to_string(inter_code* code) {
         case PARAM:
             sprintf(code_str, "PARAM %s:", op_to_string(op));
             break;
-        case READ:
+        case cREAD:
             sprintf(code_str, "READ %s:", op_to_string(op));
             break;
-        case WRITE:
+        case cWRITE:
             sprintf(code_str, "WRITE %s:", op_to_string(op));
             break;
-        case ASSIGN:
+        case cASSIGN:
             sprintf(code_str, "%s := %s", op_to_string(left), op_to_string(right));
             break;
         case ADDR:
@@ -164,19 +165,19 @@ char* code_to_string(inter_code* code) {
         case CALL:
             sprintf(code_str, "%s := CALL %s", op_to_string(left), op_to_string(right));
             break;
-        case ADD:
+        case cADD:
             sprintf(code_str, "%s := %s + %s", op_to_string(bresult), op_to_string(bop1), op_to_string(bop2));
             break;
-        case SUB:
+        case cSUB:
             sprintf(code_str, "%s := %s - %s", op_to_string(bresult), op_to_string(bop1), op_to_string(bop2));
             break;
-        case MUL:
+        case cMUL:
             sprintf(code_str, "%s := %s * %s", op_to_string(bresult), op_to_string(bop1), op_to_string(bop2));
             break;
-        case DIV:
+        case cDIV:
             sprintf(code_str, "%s := %s / %s", op_to_string(bresult), op_to_string(bop1), op_to_string(bop2));
             break;
-        case IF:
+        case cIF:
             sprintf(code_str, "IF %s %s %s GOTO %s",
             op_to_string(iop1), relop_to_string(rop), op_to_string(iop2), op_to_string(iresult));
             break;
