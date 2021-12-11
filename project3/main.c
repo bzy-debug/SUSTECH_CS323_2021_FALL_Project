@@ -11,7 +11,9 @@
 
 void generate_grammar_tree(FILE *);
 void semantic_check(node* grammar_tree, llist* symbol_table);
+void init(node* grammar_tree);
 
+inter_code* my_generate_IR(node* grammar_tree, llist* st_stack);
 inter_code*  generate_IR(node* grammar_tree);
 inter_code* translate_Exp(node* Exp, char* place);
 inter_code* translate_cond_Exp(node* Exp,int  lb1,int  lb2);
@@ -44,7 +46,7 @@ int main(int argc, char**argv) {
     }
 
     generate_grammar_tree(f);
-    generate_IR(root);
+    // generate_IR(root);
     fclose(f);
 
     if(iserror == 0){
@@ -53,8 +55,13 @@ int main(int argc, char**argv) {
     else
         return 1;
 
-    llist* symbol_table_stack = create_llist();     //value: symbol_table
-    // semantic_check(root, symbol_table_stack);
+    llist* sc_symbol_table_stack = create_llist();     //value: symbol_table
+    semantic_check(root, sc_symbol_table_stack);
+    
+    init(root);
+
+    llist* ir_symbol_table_stack = create_llist();
+    my_generate_IR(root, ir_symbol_table_stack);
 
     // llist_node* cur = symbol_table_stack->head->next;
     // while (cur != symbol_table_stack->tail)
@@ -64,6 +71,25 @@ int main(int argc, char**argv) {
     // }
 
     return 0;
+}
+
+void init(node* grammar_tree) {
+    llist* stack = create_llist(NULL);
+    llist_append(stack, create_node(NULL, grammar_tree));
+    while (stack->size >= 1)
+    {
+        node* pare = (node*)llist_pop(stack)->value;
+
+        pare->isexplored = 0;
+
+        llist_node* cur = pare->children->tail->prev;
+        while (cur != pare->children->head)
+        {
+            llist_append(stack, create_node(NULL, cur->value));
+            cur = cur->prev;
+        }
+    }
+    
 }
 
 void generate_grammar_tree(FILE* f) {
@@ -145,6 +171,69 @@ void semantic_check(node* grammar_tree, llist* symbol_table_stack) {
                 semantic_error(8, exp->line, "");
             }
         }
+
+        llist_node* cur = pare->children->tail->prev;
+        while (cur != pare->children->head)
+        {
+            llist_append(stack, create_node(NULL, cur->value));
+            cur = cur->prev;
+        }
+    } 
+}
+
+inter_code* my_generate_IR(node* grammar_tree, llist* symbol_table_stack) {
+    inter_code* start_code = cnt_ic(1, 0);
+
+    llist* symbol_table = create_llist();
+    llist_append(symbol_table_stack, create_node(NULL, symbol_table));
+
+    llist* stack = create_llist(NULL);
+    llist_append(stack, create_node(NULL, grammar_tree));
+    while (stack->size >= 1)
+    {
+        node* pare = (node*)llist_pop(stack)->value;
+
+        if(pare->node_type == eRC && pare->pare->node_type == nterm && strcmp(pare->pare->val.ntermval,"CompSt") == 0) {
+            llist_pop(symbol_table_stack);
+            symbol_table = llist_peak(symbol_table_stack)->value;
+        }//exit scope
+
+        if(pare->isempty || pare->children == NULL)   continue;
+
+        else if(pare->node_type == nterm && strcmp(pare->val.ntermval,"CompSt") == 0 ) {
+            symbol_table = create_llist();
+            llist_append(symbol_table_stack, create_node(NULL, symbol_table));
+
+            if(strcmp(pare->pare->val.ntermval, "ExtDef") == 0) {
+                node* func_node = (node*)pare->pare->children->head->next->next->value;
+                char* func_id = ((node*)func_node->children->head->next->value)->val.idval;
+                MyType* func_type = get_type_by_key(func_id, symbol_table_stack);
+                llist_concatenate(symbol_table, get_func_parameter(func_type));
+            }
+        }// enter new scope
+
+        else if(pare->node_type == nterm && strcmp(pare->val.ntermval,"Def") == 0 && pare->isexplored == 0) {
+            llist* t = get_symbol_node_list_from_def(pare, symbol_table, symbol_table_stack);
+            llist_concatenate(symbol_table, t);
+        }
+
+        else if (pare->node_type == nterm && strcmp(pare->val.ntermval,"ExtDef") == 0 && pare->isexplored == 0) {
+            llist* t = get_symbol_node_list_from_extdef(pare, symbol_table, symbol_table_stack);
+            llist_concatenate(symbol_table, t);
+        }
+        // construct symbol table over, generate ir code
+
+        if (pare->node_type == nterm && strcmp(pare->val.ntermval, "Stmt") == 0) {
+            translate_Stmt(pare);
+        }
+        else if (pare->node_type == nterm && strcmp(pare->val.ntermval, "FunDec") == 0) {
+            translate_FunDec(pare);
+        }
+        else if (pare->node_type == nterm && strcmp(pare->val.ntermval, "Dec") == 0) {
+            translate_Dec(pare);
+        }
+
+
 
         llist_node* cur = pare->children->tail->prev;
         while (cur != pare->children->head)
@@ -507,19 +596,21 @@ int  new_lable(){
 }
 
 inter_code* ir_concatenate(int num,...){
-//TODO
+
+    inter_code** code_array = malloc(sizeof(inter_code*)*num);
     va_list codes;
     va_start(codes,num);
-    while (num >1)
+    for (int i=0; i<num; i++)
     {
         inter_code* code = va_arg(codes,inter_code*);
-        if (code!=NULL){
-            print_code(code);
-        }
-        num--;
-
+        code_array[i] = code;
     }
     va_end(codes);
-    return NULL;
+
+    for(int i=0; i<num-1; i++){
+        code_array[i]->next = code_array[i+1];
+        code_array[i+1]->prev = code_array[i];
+    }
+    return code_array[0];
 
 }
