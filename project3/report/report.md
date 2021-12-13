@@ -1,8 +1,14 @@
-# report
+# Report
 
-## IR Data Structure
+11910501 BaoZhiyuan 11910934 WuZemin 11810925 ZhouYicheng
+
+## 1.Overview
+
+In this project, we implement a compiler that will generate a particular intermediate representation (IR) for a given source program. And our compiler can translate the definition and the usage of n-D array.
+
+## 2. IR data structure
 The generated IRs are stored in memory using the data structure defined in `inter_code.h`. It is like this:
-```
+```c
 struct operand {
     enum { VARIABLE, CONSTANT, ... } kind;
     union {
@@ -23,25 +29,16 @@ struct inter_code {
 }
 ```
 It is just the enumeration of all kinds of three address code. In addition, to support the code catenate function, two pointers `prev` and `next` are added to make the inter_code doubly linked list. Therefore, we only need to traverse the linked list when printing the codes.
----
-
-11910501()
-
-## 1.Overview
-
-In this project, we implement a compiler that will generate a particular intermediate representation (IR) for a given source program. And our compiler can translate the definition and the usage of n-D array.
-
-## 2. IR data structure
 
 ## 3.Translate schema
 
 ### 3.1 Basic translate schema
 
-     Most of the translate grammar flow the instruction in the released pdf file. And we add some other grammar to translate the following situation:
+Most of the translate grammar flow the instruction in the released pdf file. And we add some other grammar to translate the following situation:
 
  
 
-```sql
+```c
 #variable dec with assign
 int num = 0, i = 1, k = 1;
 #function dec
@@ -50,7 +47,7 @@ int sqr(int i1){
 }
 ```
 
-```sql
+```c
 translate_DefList(DefList)
     if Dec in the subtree of the DefList:
          code = code+ translate(Dec)
@@ -68,7 +65,7 @@ translate_VarDec(vardec_node){
      return [DEC vardec_node.id size]
 ```
 
-```sql
+```c
 translate_FunDec(Fundec):
     case: ID LP RP 
         return [FUNCTION ID:]
@@ -86,7 +83,7 @@ translate_varList(VarList)
 
 We add a function that will calculate the addr of the place in a array recursively.
 
-```sql
+```c
 translate_exp_addr( exp, addr, base)
     case ID:
          return [addr := ID]
@@ -102,9 +99,9 @@ translate_exp_addr( exp, addr, base)
          
 ```
 
- And we find out that only two way that will use the array or assign it, so we add following code.
+And we find out that only two way that will use the array or assign it, so we add following code.
 
-```sql
+```c
 translate_exp:
    case exp1 assign exp2
        switch exp1

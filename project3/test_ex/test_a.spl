@@ -6,10 +6,13 @@ int main()
     {
         while (j < 7)
         {
-            r[i][j] = i+j
+            r[i][j] = i+j;
+            j = j + 1;
         }
-        write[4][5];
-        weite[1][6];
+        i = i + 1;
+        j = 0;
     }
+    write(r[4][5]);
+    write(r[1][6]);
     return 0;
 }
