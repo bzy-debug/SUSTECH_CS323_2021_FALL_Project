@@ -30,6 +30,7 @@ typedef struct NODE
     int isexplored; // default is 0
     int left_or_right; // 0 is left, 1 is right, default is 1
     int line;
+    int istranslated;
     nodeVal val;
     MyType* type;
     llist* children;
@@ -40,6 +41,8 @@ typedef struct NODE
 void addchild(node* ,int , ... );
 
 void print_tree(node*, int);
+
+void print_node(node* );
 
 node* create_grammar_node(nodeType nodeType, int line);
 

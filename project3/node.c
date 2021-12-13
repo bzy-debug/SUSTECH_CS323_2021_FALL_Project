@@ -3,7 +3,6 @@
 #include<stdlib.h>
 #include<stdio.h>
 
-void print_node(node* n);
 
 node* create_grammar_node(nodeType nodeType, int line) {
     node* new_node = malloc(sizeof(node));
@@ -12,6 +11,7 @@ node* create_grammar_node(nodeType nodeType, int line) {
     new_node->isempty = 0;
     new_node->isexplored = 0;
     new_node->left_or_right = 1;
+    new_node->istranslated = 0;
     return new_node;
 }
 

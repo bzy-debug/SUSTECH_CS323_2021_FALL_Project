@@ -449,3 +449,7 @@ MyType* get_current_function(llist* symbol_table_stack) {
     llist* global_symbol_table = (llist*) symbol_table_stack->head->next->value;
     return (MyType*) global_symbol_table->tail->prev->value;
 }
+
+llist* func_symbol_table(node* funcdec) { //for ir generating
+
+}

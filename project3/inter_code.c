@@ -21,6 +21,7 @@ operand* cnt_op_str(op_kind kind, char* op_val) {
 
 inter_code* cnt_ic(ic_kind kind, int num, ...) {
     inter_code* new_code = malloc(sizeof(inter_code));
+    new_code->prev = new_code->next = NULL;
     new_code->kind = kind;
     va_list valist;
     va_start(valist, num);
@@ -46,7 +47,7 @@ inter_code* cnt_ic(ic_kind kind, int num, ...) {
         break;
     default:
         va_end(valist);
-        return NULL;
+        return new_code;
     }
     va_end(valist);
     return new_code;
@@ -124,28 +125,28 @@ char* code_to_string(inter_code* code) {
     relop rop = code->u.ifgo.rop;
     switch (code->kind) {
         case DEF_LAB:
-            sprintf(code_str, "LABEL %s:", op_to_string(op));
+            sprintf(code_str, "LABEL %s :", op_to_string(op));
             break;
         case DEF_FUNC:
-            sprintf(code_str, "FUCTION %s:", op_to_string(op));
+            sprintf(code_str, "FUNCTION %s :", op_to_string(op));
             break;
         case GOTO:
-            sprintf(code_str, "GOTO %s:", op_to_string(op));
+            sprintf(code_str, "GOTO %s", op_to_string(op));
             break;
         case cRETURN:
-            sprintf(code_str, "RETURN %s:", op_to_string(op));
+            sprintf(code_str, "RETURN %s", op_to_string(op));
             break;
         case ARG:
-            sprintf(code_str, "ARG %s:", op_to_string(op));
+            sprintf(code_str, "ARG %s", op_to_string(op));
             break;
         case PARAM:
-            sprintf(code_str, "PARAM %s:", op_to_string(op));
+            sprintf(code_str, "PARAM %s", op_to_string(op));
             break;
         case cREAD:
-            sprintf(code_str, "READ %s:", op_to_string(op));
+            sprintf(code_str, "READ %s", op_to_string(op));
             break;
         case cWRITE:
-            sprintf(code_str, "WRITE %s:", op_to_string(op));
+            sprintf(code_str, "WRITE %s", op_to_string(op));
             break;
         case cASSIGN:
             sprintf(code_str, "%s := %s", op_to_string(left), op_to_string(right));

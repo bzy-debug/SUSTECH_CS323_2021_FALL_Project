@@ -38,8 +38,9 @@ struct inter_code_ {
         struct { operand *right, *left; } assign;
         struct { operand *result, *op1, *op2; } binop;
         struct { operand *result, *op1, *op2; relop rop;} ifgo;
-        llist* code_list;
     } u;    
+    inter_code* prev;
+    inter_code* next;
 };
 
 operand* cnt_op_int(op_kind kind, int op_val);

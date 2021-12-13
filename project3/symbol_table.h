@@ -8,6 +8,8 @@
 
 void print_symbol_table(llist* symbol_table);
 
+llist* func_symbol_table(node* funcdec); //for ir generating
+
 MyType* get_type_from_specifier(node* specifier, llist* symbol_table, llist* symbol_table_stack);
 
 MyType* get_struct_type(node* struct_specifier, llist* symbol_table, llist* symbol_table_stack);
