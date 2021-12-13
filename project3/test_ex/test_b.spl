@@ -1,0 +1,9 @@
+int main()
+{
+    int r[10][6];
+    int m;
+    m = read();
+    r[9][3] = m;
+    write(r[9][3]);
+    return 0;
+}

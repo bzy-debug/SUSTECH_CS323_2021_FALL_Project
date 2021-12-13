@@ -1,0 +1,15 @@
+int main()
+{
+    int r[7][7];
+    int i = 0, j = 0;
+    while (i < 7)
+    {
+        while (j < 7)
+        {
+            r[i][j] = i+j
+        }
+        write[4][5];
+        weite[1][6];
+    }
+    return 0;
+}
