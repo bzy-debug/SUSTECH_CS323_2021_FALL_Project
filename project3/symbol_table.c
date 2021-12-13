@@ -388,7 +388,7 @@ MyType* get_exp_type(node* exp, llist* symbol_table_stack) {
                 }
             }
             else if (second_child->node_type == eAND || second_child->node_type == eOR) {
-                if (left_exp->node_type != eINT || right_exp->node_type != eINT){
+                if (left_exp->type->primitive != INTEGER || right_exp->type->primitive != INTEGER){
                     semantic_error(7, exp->line, "");
                     exp->type = NULL;
                     return exp->type;

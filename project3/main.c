@@ -26,7 +26,7 @@ void test(inter_code* start) {
     printf("\n");
 }
 
-inter_code* my_generate_IR(node* grammar_tree, llist* st_stack);
+inter_code* my_generate_IR(node* grammar_tree);
 inter_code*  generate_IR(node* grammar_tree);
 inter_code* translate_Exp(node* Exp, char* place);
 inter_code* translate_cond_Exp(node* Exp,int  lb1,int  lb2);
@@ -37,7 +37,7 @@ inter_code* translate_VarList(node* VarList);
 inter_code* translate_VarDec(node* vardec);
 inter_code* translate_Dec(node* dec);
 inter_code* translate_StructSpecifier(node* Struct_S);
-inter_code* translate_exp_addr(node* exp,char* addr);
+inter_code* translate_exp_addr(node* exp,char* addr,int base);
 inter_code* translate_DefList(node* DefList);
 
 
@@ -65,18 +65,21 @@ int main(int argc, char**argv) {
     fclose(f);
 
     if(iserror == 0){
-        print_tree(root, 0);
+        // print_tree(root, 0);
     }
     else
         return 1;
 
     llist* sc_symbol_table_stack = create_llist();     //value: symbol_table
-    // semantic_check(root, sc_symbol_table_stack);
+
+    
+
+    semantic_check(root, sc_symbol_table_stack);
     
     // init(root);
 
-    llist* ir_symbol_table_stack = create_llist();
-    inter_code* start = my_generate_IR(root, ir_symbol_table_stack);
+    // llist* ir_symbol_table_stack = create_llist();
+    inter_code* start = my_generate_IR(root);
     test(start);
     
     
@@ -118,8 +121,16 @@ void generate_grammar_tree(FILE* f) {
 }
 
 void semantic_check(node* grammar_tree, llist* symbol_table_stack) {
+    MyType* read_func = createType("func");
+    setFuncReturnType(read_func, createType("int"));
+
+    MyType* write_func = createType("func");
+    addFuncParameter(write_func, createType("int"), "x");
+
     llist* symbol_table = create_llist();
     llist_append(symbol_table_stack, create_node(NULL, symbol_table));
+    llist_append(symbol_table, create_node("read", read_func));
+    llist_append(symbol_table, create_node("write", write_func));
 
     llist* stack = create_llist(NULL);
     llist_append(stack, create_node(NULL, grammar_tree));
@@ -199,12 +210,9 @@ void semantic_check(node* grammar_tree, llist* symbol_table_stack) {
     } 
 }
 
-inter_code* my_generate_IR(node* grammar_tree, llist* symbol_table_stack) {
+inter_code* my_generate_IR(node* grammar_tree) {
     inter_code* start_code = cnt_ic(1, 0);
     inter_code* cur_code = start_code;
-
-    llist* symbol_table = create_llist();
-    llist_append(symbol_table_stack, create_node(NULL, symbol_table));
 
     llist* stack = create_llist(NULL);
     llist_append(stack, create_node(NULL, grammar_tree));
@@ -212,37 +220,7 @@ inter_code* my_generate_IR(node* grammar_tree, llist* symbol_table_stack) {
     {
         node* pare = (node*)llist_pop(stack)->value;
         if(pare->isempty || pare->children == NULL)   continue;
-        print_node(pare);
-
-        if(pare->node_type == eRC && pare->pare->node_type == nterm && strcmp(pare->pare->val.ntermval,"CompSt") == 0) {
-            llist_pop(symbol_table_stack);
-            symbol_table = llist_peak(symbol_table_stack)->value;
-        }//exit scope
-
-        
-
-        else if(pare->node_type == nterm && strcmp(pare->val.ntermval,"CompSt") == 0 ) {
-            symbol_table = create_llist();
-            llist_append(symbol_table_stack, create_node(NULL, symbol_table));
-
-            if(strcmp(pare->pare->val.ntermval, "ExtDef") == 0) {
-                node* func_node = (node*)pare->pare->children->head->next->next->value;
-                char* func_id = ((node*)func_node->children->head->next->value)->val.idval;
-                MyType* func_type = get_type_by_key(func_id, symbol_table_stack);
-                llist_concatenate(symbol_table, get_func_parameter(func_type));
-            }
-        }// enter new scope
-
-        else if(pare->node_type == nterm && strcmp(pare->val.ntermval,"Def") == 0 && pare->isexplored == 0) {
-            llist* t = get_symbol_node_list_from_def(pare, symbol_table, symbol_table_stack);
-            llist_concatenate(symbol_table, t);
-        }
-
-        else if (pare->node_type == nterm && strcmp(pare->val.ntermval,"ExtDef") == 0 && pare->isexplored == 0) {
-            llist* t = get_symbol_node_list_from_extdef(pare, symbol_table, symbol_table_stack);
-            llist_concatenate(symbol_table, t);
-        }
-        // construct symbol table over, generate ir code
+        // print_node(pare);
 
         if (pare->node_type == nterm && strcmp(pare->val.ntermval, "Stmt") == 0 && pare->istranslated == 0) {
             inter_code* ir = translate_Stmt(pare);
@@ -352,7 +330,7 @@ inter_code* translate_Exp(node* Exp, char* place){
                     char* t1= new_place();
                     inter_code* code1 = translate_Exp(third_node,t1);
                     char* t2 = new_place();
-                    inter_code* code2 = translate_exp_addr(pare,t2);
+                    inter_code* code2 = translate_exp_addr(pare,t2,4);
                     inter_code* code3 = cnt_ic(LEFT_S, 2,cnt_op_str(VARIABLE,t2), cnt_op_str(VARIABLE,t1));
                     return ir_concatenate(3,code1,code2,code3);
                 }
@@ -410,21 +388,9 @@ inter_code* translate_Exp(node* Exp, char* place){
         }
         else if(pare->node_type ==nterm&& strcmp(pare->val.ntermval, "Exp") == 0 && pare->pare->children->size == 4) {
             //Exp1 LB Exp2 RB : read the arr value
-            node* exp2_node = (node*)Exp->children->head->next->next->next->value;
-
             char* t1 = new_place();
-            char* t2 = new_place();
-            char* t3 = new_place();
-            char* t4 = new_place();
-
-            inter_code* code1 = translate_Exp(exp2_node,t1);
-            inter_code* code2 = translate_Exp(pare,t2);
-            inter_code* code3 = cnt_ic(cMUL,3,cnt_op_str(VARIABLE,t1),cnt_op_int(CONSTANT,4),cnt_op_str(VARIABLE,t3));
-
-            inter_code* code4 = cnt_ic(cADD,3,cnt_op_str(VARIABLE,t2),cnt_op_str(VARIABLE,t3),cnt_op_str(VARIABLE,t4));
-            inter_code* code5 = cnt_ic(RIGHT_S,2,cnt_op_str(VARIABLE,place),cnt_op_str(VARIABLE,t4));
-            //*= not showing
-            return  ir_concatenate( 5,code1 , code2 , code3 , code4 , code5);
+            inter_code* code = translate_exp_addr(Exp,t1,4);
+            return  ir_concatenate(2, code, cnt_ic(RIGHT_S,2,cnt_op_str(VARIABLE,place),cnt_op_str(VARIABLE,t1)));
         }
         else if(pare->node_type ==eLP) {
             //LP EXP RP
@@ -441,11 +407,24 @@ inter_code* translate_Exp(node* Exp, char* place){
             return ir_concatenate(2, translate_Exp(exp_node,tp), cnt_ic(cWRITE,1,cnt_op_str(VARIABLE,tp)));
         }else if(pare->node_type == eID&& Exp->children->size == 3){
             char* value = pare->val.idval;
+
+            if(strcmp(value, "read") == 0) {
+                return cnt_ic(cREAD,1,cnt_op_str(VARIABLE,place));
+            }
+
             return cnt_ic(CALL,2,cnt_op_str(VARIABLE,place),cnt_op_str(oFUNCTION,value));
         }else if(pare->node_type == eID&& Exp->children->size == 4){
             node* args_node = (node*)pare->pare->children->head->next->next->next->value;
 
             char* value = pare->val.idval;
+
+            if(strcmp(value, "write") == 0) {
+                char* tp = new_place();
+                node* third_node = (node*)pare->pare->children->head->next->next->next->value;
+                node* exp_node = (node*) third_node->children->head->next->value;
+                // print_tree(exp_node, 0);
+                return ir_concatenate(2, translate_Exp(exp_node,tp), cnt_ic(cWRITE,1,cnt_op_str(VARIABLE,tp)));
+            }
 
             inter_code* code1 = translate_Arg(args_node);
             return ir_concatenate(2, code1 , cnt_ic(CALL,2,cnt_op_str(VARIABLE, place),cnt_op_str(VARIABLE, value)));
@@ -721,7 +700,7 @@ inter_code* translate_StructSpecifier(node* Struct_S){
 
 }
 
-inter_code* translate_exp_addr(node* exp,char* addr){
+inter_code* translate_exp_addr(node* exp,char* addr, int base){
     node* pare = (node*)exp->children->head->next->value;
     if(pare->node_type == eID&& pare->pare->children->size == 1) {
         char* value = pare->val.idval;
@@ -729,7 +708,7 @@ inter_code* translate_exp_addr(node* exp,char* addr){
     }else{
             node* exp2_node = (node*)exp->children->head->next->next->next->value;
 
-            int t1 ;
+            char* t1 = new_place();
             char* t2 = new_place();
             char* t3 = new_place();
 
@@ -737,11 +716,13 @@ inter_code* translate_exp_addr(node* exp,char* addr){
 
 
             //offset
-            inter_code* code3 = cnt_ic(cMUL,3,cnt_op_int(VARIABLE,t1),cnt_op_int(CONSTANT,4),cnt_op_str(VARIABLE,t2));
+            inter_code* code3 = cnt_ic(cMUL,3,cnt_op_str(VARIABLE,t1),cnt_op_int(CONSTANT,base),cnt_op_str(VARIABLE,t2));
             //addr = exp1_addr + offset
+            base = base * pare->type->array->size;
+            inter_code* code2 = translate_exp_addr(pare,t3,base);
             inter_code* code4 = cnt_ic(cADD,3,cnt_op_str(VARIABLE,t2),cnt_op_str(VARIABLE,t3),cnt_op_str(VARIABLE,addr));
             //*= not showing
-            return  ir_concatenate( 4,code1, code3 , code4);
+            return  ir_concatenate( 4,code1,code2, code3 , code4);
 
     }
 

@@ -12,7 +12,7 @@
 %union {
     node* type_node;
 }
-%token<type_node> INT FLOAT CHAR ID TYPE STRUCT IF ELSE WHILE RETURN READ WRITE
+%token<type_node> INT FLOAT CHAR ID TYPE STRUCT IF ELSE WHILE RETURN
 %token<type_node> INVALID_TOKEN
 %token<type_node> DOT SEMI COMMA ASSIGN LT LE GT GE NE EQ PLUS MINUS MUL DIV AND OR NOT LP RP LB RB LC RC
 %right ASSIGN
@@ -350,17 +350,7 @@ Exp: Exp ASSIGN Exp{
         $$->val.ntermval = "Exp";
         addchild($$, 4, $1, $2, $3, $4);
     }
-    | WRITE LP Exp RP {
-        $$ = create_grammar_node(nterm, @$.first_line);
-        $$->val.ntermval = "Exp";
-        addchild($$, 4, $1, $2, $3, $4);
-    }
     | ID LP RP{
-        $$ = create_grammar_node(nterm, @$.first_line);
-        $$->val.ntermval = "Exp";
-        addchild($$, 3, $1, $2, $3);
-    }
-    | READ LP RP {
         $$ = create_grammar_node(nterm, @$.first_line);
         $$->val.ntermval = "Exp";
         addchild($$, 3, $1, $2, $3);

@@ -41,6 +41,7 @@ struct Type *createType(char *str) {
     type->category = FUNCTION;
     type->function = malloc(sizeof(struct FunctionType));
     type->function->parameters = NULL;
+    type->function->returnType = NULL;
     return type;
   }
   return NULL;

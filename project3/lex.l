@@ -29,16 +29,6 @@ id [_a-zA-Z][_a-zA-Z0-9]*
 wrong_id [0-9]+[_a-zA-Z]+[0-9]*
 %%
 
-read {
-    yylval.type_node = create_grammar_node(eREAD, -1);
-    return READ;
-}
-
-write {
-    yylval.type_node = create_grammar_node(eWRITE, -1);
-    return WRITE;
-}
-
 int { 
     yylval.type_node = create_grammar_node(eTYPE, -1);
     yylval.type_node->val.typeval = "int";
