@@ -250,6 +250,15 @@ inter_code* my_generate_IR(node* grammar_tree) {
             // test(start_code);
             }
         }
+        // else if (pare->node_type == nterm && strcmp(pare->val.ntermval, "StructSpecifier") == 0) {
+        //     inter_code* ir = translate_StructSpecifier(pare);
+        //     if (ir != NULL) {
+        //         cur_code = ir_concatenate(2 , cur_code, ir);
+        //         while (cur_code->next != NULL)
+        //             cur_code = cur_code->next;
+        //     // test(start_code);
+        //     }
+        // }
 
 
 
@@ -345,12 +354,10 @@ inter_code* translate_Exp(node* Exp, char* place){
                 return ir_concatenate(3,code1,code2,code3);
             }else if(second_node->node_type == eDOT){
                 //Exp DOT ID
-                char* t1 = new_place();
-                inter_code* code1 = translate_Exp(Exp,t1);
-                // char* t2 = new_place();
-                // code2 = [tp := struct.name + #(offset(ID)*4)];
-                // inter_code* code3 = [place := *tp];
-                // return code1 + code2 + code3
+                char* addr =new_place();
+                inter_code* code1 = translate_exp_addr(Exp,addr,0);
+                return  ir_concatenate(2, code1, cnt_ic(RIGHT_S,2,cnt_op_str(VARIABLE,place),cnt_op_str(VARIABLE,addr)));
+                
             }
             else if(second_node->node_type == eMUL){
                 char* t1= new_place();
@@ -690,13 +697,19 @@ inter_code* translate_VarDec(node* vardec_node){
 }
 
 inter_code* translate_StructSpecifier(node* Struct_S){
-    if(Struct_S->children->size == 2) {
-        node* Struct_node = (node*)Struct_S->children->head->next->value;
-        node* ID_node = (node*)Struct_S->children->head->next->next->value;
-        
-        char* tp = new_place();
-        int size = 4;
+    MyFieldType* struct_type = Struct_S->type->structure;
+    node* id_node = (node*)Struct_S->children->head->next->next->value;
+    char* id = id_node->val.idval;
+    int size = 0;
+    while (struct_type != NULL)
+    {
+        size += 4;
+        struct_type = struct_type->next;   
     }
+    char* size_str = malloc(sizeof(char) * 10);
+    sprintf(size_str, "%d", size);
+    return cnt_ic(DEC , 2 , cnt_op_str(VARIABLE,id),cnt_op_str(VARIABLE,size_str));
+    
 
 }
 
@@ -704,8 +717,8 @@ inter_code* translate_exp_addr(node* exp,char* addr, int base){
     node* pare = (node*)exp->children->head->next->value;
     if(pare->node_type == eID&& pare->pare->children->size == 1) {
         char* value = pare->val.idval;
-        return cnt_ic(ADDR, 2,cnt_op_str(VARIABLE,addr), cnt_op_str(VARIABLE, value));
-    }else{
+        return cnt_ic(cASSIGN, 2,cnt_op_str(VARIABLE,addr), cnt_op_str(VARIABLE, value));
+    }else if(exp->children->size == 4){
             node* exp2_node = (node*)exp->children->head->next->next->next->value;
 
             char* t1 = new_place();
@@ -724,6 +737,22 @@ inter_code* translate_exp_addr(node* exp,char* addr, int base){
             //*= not showing
             return  ir_concatenate( 4,code1,code2, code3 , code4);
 
+    }else{
+        node* third_node = (node*)exp->children->head->next->next->next->value;
+
+        char* name = third_node->val.idval;
+        MyFieldType* field = exp->type->structure;
+        int size = 0;
+        while (strcmp(field->name,name)!=0)
+        {
+            size += 4;
+            field = field->next;
+        }
+        char* t1 = new_place();
+        inter_code* code1 = translate_exp_addr(pare,t1,4);
+        inter_code* code2 = cnt_ic(cADD,3,cnt_op_str(VARIABLE,t1),cnt_op_int(CONSTANT,size),cnt_op_str(VARIABLE,addr));
+        return  ir_concatenate( 2,code1,code2);
+
     }
 
 }
@@ -737,7 +766,10 @@ inter_code* translate_DefList(node* DefList){
         node* pare = (node*)llist_pop(stack)->value;
         if (pare->node_type == nterm && strcmp(pare->val.ntermval, "Dec") == 0) {
             inter_code* ir =ir_concatenate(2,ir, translate_Dec(pare));
-    }
+        }
+        // else if (pare->node_type == nterm && strcmp(pare->val.ntermval, "Def") == 0) {
+
+        // }
 
         if(pare->isempty || pare->children == NULL)   continue;
 

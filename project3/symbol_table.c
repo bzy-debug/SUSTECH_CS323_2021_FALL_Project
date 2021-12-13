@@ -46,6 +46,7 @@ MyType* get_struct_type(node* struct_specifier, llist* symbol_table, llist* symb
             return NULL;
         }
         else {
+            struct_specifier->type = struct_type;
             return struct_type;
         }
     }
@@ -95,6 +96,7 @@ MyType* get_struct_type(node* struct_specifier, llist* symbol_table, llist* symb
         }
 
         llist_append(symbol_table, create_node(struct_symbol_id, struct_type));
+        struct_specifier->type = struct_type;
         return struct_type;
     }
 }
