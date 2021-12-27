@@ -6,6 +6,7 @@ FILE *fd;
 #define _tac_kind(tac) (((tac)->code).kind)
 #define _tac_quadruple(tac) (((tac)->code).tac)
 #define _reg_name(reg) regs[reg].name
+int num = 0;
 
 
 Register get_register(tac_opd *opd){
@@ -304,13 +305,26 @@ tac *emit_arg(tac *arg){
 
 tac *emit_call(tac *call){
     /* COMPLETE emit function */
-    tac* arg = call->prev;
-    int num = 0;
-    while (_tac_kind(arg) == ARG) {
-        num ++;
-        arg = arg->prev;
+    _mips_iprintf("addi $sp, $sp ,%d",-(num+1)*4);
+    for(int i = 0; i<num;i++){
+        _mips_iprintf("sw $a%d, %d($sp)",i,i*4);
     }
- 
+    _mips_iprintf("sw $ra, %d($sp)",num*4);
+
+    tac* p = call;
+    for(int i=0;i<num;i++){
+        p = p->prev;
+        _mips_iprintf("move $a%i, %s",i,p->code.arg.var);
+    }
+
+    _mips_iprintf("jal %s",_tac_quadruple(call).funcname);
+
+    for(int i = 0; i<num;i++){
+        _mips_iprintf("lw $a%d, %d($sp)",i,i*4);
+    }
+    _mips_iprintf("lw $ra, %d($sp)",num*4);
+    _mips_iprintf("addi $sp, $sp ,%d",(num+1)*4);
+    num = 0;
     return call->next;
 }
 
