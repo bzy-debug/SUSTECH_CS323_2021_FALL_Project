@@ -30,10 +30,11 @@ int main(int argc, char *argv[]){
     len = strlen(file);
     file[len-2] = 's';
     file[len-1] = '\0';
-    fp = stdout; // fopen(file, "w");
+    // fp = stdout; // fopen(file, "w");
+    fp = fopen(file, "w");
     head = tac_from_buffer(buf);
     mips32_gen(head, fp);
-    // fclose(fp);
+    fclose(fp);
 
     return 0;
 }

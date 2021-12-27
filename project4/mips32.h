@@ -16,7 +16,7 @@ typedef enum {
 
 struct RegDesc {    // the register descriptor
     const char *name;
-    char var[8];
+    int dict[100];
     bool dirty; // value updated but not stored
     /* add other fields as you need */
 } regs[NUM_REGS];

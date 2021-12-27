@@ -11,14 +11,35 @@ FILE *fd;
 Register get_register(tac_opd *opd){
     assert(opd->kind == OP_VARIABLE);
     char *var = opd->char_val;
+    int t0 = -1;
     /* COMPLETE the register allocation */
+    int index = strtol(&var[1], NULL, 0);
+    for (int i=8; i<=23; i++) {
+        if (regs[i].dirty == TRUE && regs[i].dict[index] == 1) {
+            t0 = i;
+            break;
+        }
+    }
     return t0;
 }
 
 Register get_register_w(tac_opd *opd){
     assert(opd->kind == OP_VARIABLE);
     char *var = opd->char_val;
+    int s0 = -1;
     /* COMPLETE the register allocation (for write) */
+    int index = strtol(&var[1], NULL, 0);
+    for (int i=8; i<=23; i++) {
+        if (regs[i].dirty == FALSE) {
+            s0 = i;
+            regs[i].dirty = TRUE;
+            regs[i].dict[index] = 1;
+            break;
+        }
+    }
+    for (int i=8; i<=23 && i != s0; i++) {
+        regs[i].dict[index] = 0;
+    }
     return s0;
 }
 
@@ -241,6 +262,9 @@ tac *emit_ifeq(tac *ifeq){
 
 tac *emit_return(tac *return_){
     /* COMPLETE emit function */
+    Register x = get_register(_tac_quadruple(return_).var);
+    _mips_iprintf("move $v0, %s", _reg_name(x));
+    _mips_iprintf("jr $ra");
     return return_->next;
 }
 
@@ -265,7 +289,7 @@ tac *emit_param(tac *param){
 }
 
 tac *emit_read(tac *read){
-    Register x = get_register(_tac_quadruple(read).p);
+    Register x = get_register_w(_tac_quadruple(read).p);
 
     _mips_iprintf("addi $sp, $sp, -4");
     _mips_iprintf("sw $ra, 0($sp)");
@@ -277,7 +301,7 @@ tac *emit_read(tac *read){
 }
 
 tac *emit_write(tac *write){
-    Register x = get_register_w(_tac_quadruple(write).p);
+    Register x = get_register(_tac_quadruple(write).p);
 
     _mips_iprintf("move $a0, %s", _reg_name(x));
     _mips_iprintf("addi $sp, $sp, -4");
@@ -365,6 +389,10 @@ void mips32_gen(tac *head, FILE *_fd){
     regs[gp].name = "$gp";
     regs[sp].name = "$sp"; regs[fp].name = "$fp";
     regs[ra].name = "$ra";
+    for(int i=0; i<32; i++) {
+        regs[i].dirty = FALSE;
+        memset(regs[i].dict, 0, sizeof regs[i].dict);
+    }
     vars = (struct VarDesc*)malloc(sizeof(struct VarDesc));
     vars->next = NULL;
     fd = _fd;
