@@ -15,7 +15,7 @@ Register get_register(tac_opd *opd){
     /* COMPLETE the register allocation */
     int index = strtol(&var[1], NULL, 0);
     for (int i=8; i<=23; i++) {
-        if (regs[i].dirty == TRUE && regs[i].dict[index] == 1) {
+        if (regs[i].var == index) {
             t0 = i;
             break;
         }
@@ -30,15 +30,15 @@ Register get_register_w(tac_opd *opd){
     /* COMPLETE the register allocation (for write) */
     int index = strtol(&var[1], NULL, 0);
     for (int i=8; i<=23; i++) {
-        if (regs[i].dirty == FALSE) {
+        if (regs[i].var == -1) {
             s0 = i;
-            regs[i].dirty = TRUE;
-            regs[i].dict[index] = 1;
+            regs[i].var = index;
             break;
         }
     }
     for (int i=8; i<=23 && i != s0; i++) {
-        regs[i].dict[index] = 0;
+        if (regs[i].var == index)
+            regs[i].var = -1;
     }
     return s0;
 }
@@ -231,37 +231,60 @@ tac *emit_goto(tac *goto_){
 }
 
 tac *emit_iflt(tac *iflt){
-    /* COMPLETE emit function */
+    Register x, y;
+    x = get_register(_tac_quadruple(iflt).c1);
+    y = get_register(_tac_quadruple(iflt).c2);
+    int z = _tac_quadruple(iflt).labelno->int_val;
+    _mips_iprintf("blt %s, %s, label%d", _reg_name(x), _reg_name(y), z);
     return iflt->next;
 }
 
 tac *emit_ifle(tac *ifle){
-    /* COMPLETE emit function */
+    Register x, y;
+    x = get_register(_tac_quadruple(ifle).c1);
+    y = get_register(_tac_quadruple(ifle).c2);
+    int z = _tac_quadruple(ifle).labelno->int_val;
+    _mips_iprintf("ble %s, %s, label%d", _reg_name(x), _reg_name(y), z);
     return ifle->next;
 }
 
 tac *emit_ifgt(tac *ifgt){
-    /* COMPLETE emit function */
+    Register x, y;
+    x = get_register(_tac_quadruple(ifgt).c1);
+    y = get_register(_tac_quadruple(ifgt).c2);
+    int z = _tac_quadruple(ifgt).labelno->int_val;
+    _mips_iprintf("bgt %s, %s, label%d", _reg_name(x), _reg_name(y), z);
     return ifgt->next;
 }
 
 tac *emit_ifge(tac *ifge){
-    /* COMPLETE emit function */
+    Register x, y;
+    x = get_register(_tac_quadruple(ifge).c1);
+    y = get_register(_tac_quadruple(ifge).c2);
+    int z = _tac_quadruple(ifge).labelno->int_val;
+    _mips_iprintf("bge %s, %s, label%d", _reg_name(x), _reg_name(y), z);
     return ifge->next;
 }
 
 tac *emit_ifne(tac *ifne){
-    /* COMPLETE emit function */
+    Register x, y;
+    x = get_register(_tac_quadruple(ifne).c1);
+    y = get_register(_tac_quadruple(ifne).c2);
+    int z = _tac_quadruple(ifne).labelno->int_val;
+    _mips_iprintf("bne %s, %s, label%d", _reg_name(x), _reg_name(y), z);
     return ifne->next;
 }
 
 tac *emit_ifeq(tac *ifeq){
-    /* COMPLETE emit function */
+    Register x, y;
+    x = get_register(_tac_quadruple(ifeq).c1);
+    y = get_register(_tac_quadruple(ifeq).c2);
+    int z = _tac_quadruple(ifeq).labelno->int_val;
+    _mips_iprintf("beq %s, %s, label%d", _reg_name(x), _reg_name(y), z);
     return ifeq->next;
 }
 
 tac *emit_return(tac *return_){
-    /* COMPLETE emit function */
     Register x = get_register(_tac_quadruple(return_).var);
     _mips_iprintf("move $v0, %s", _reg_name(x));
     _mips_iprintf("jr $ra");
@@ -275,11 +298,19 @@ tac *emit_dec(tac *dec){
 
 tac *emit_arg(tac *arg){
     /* COMPLETE emit function */
+    // do nothing
     return arg->next;
 }
 
 tac *emit_call(tac *call){
     /* COMPLETE emit function */
+    tac* arg = call->prev;
+    int num = 0;
+    while (_tac_kind(arg) == ARG) {
+        num ++;
+        arg = arg->prev;
+    }
+ 
     return call->next;
 }
 
@@ -391,7 +422,7 @@ void mips32_gen(tac *head, FILE *_fd){
     regs[ra].name = "$ra";
     for(int i=0; i<32; i++) {
         regs[i].dirty = FALSE;
-        memset(regs[i].dict, 0, sizeof regs[i].dict);
+        regs[i].var = -1;
     }
     vars = (struct VarDesc*)malloc(sizeof(struct VarDesc));
     vars->next = NULL;
