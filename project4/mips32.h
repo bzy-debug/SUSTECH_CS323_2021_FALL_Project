@@ -16,17 +16,14 @@ typedef enum {
 
 struct RegDesc {    // the register descriptor
     const char *name;
-    int dict[100];
-    bool dirty; // value updated but not stored
-    /* add other fields as you need */
+    int var;
 } regs[NUM_REGS];
 
 
 struct VarDesc {    // the variable descriptor
-    char var[8];
+    int var;
     Register reg;
     int offset; // the offset from stack
-    /* add other fields as you need */
     struct VarDesc *next;
 } *vars;
 
