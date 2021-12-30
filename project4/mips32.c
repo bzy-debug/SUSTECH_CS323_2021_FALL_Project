@@ -30,7 +30,6 @@ Register get_register(tac_opd *opd){
     assert(opd->kind == OP_VARIABLE);
     char *var = opd->char_val;
     int t0 = -1;
-    /* COMPLETE the register allocation */
     int index = strtol(&var[1], NULL, 0);
 
     vardesc* cur = vars->next;
@@ -85,6 +84,7 @@ void spill_register(Register reg){
         _mips_iprintf("addi $sp, $fp, -%d", new->offset);
     }
     else {
+        regs[reg].var = -1;
         _mips_iprintf("sw %s, -%d($fp)", _reg_name(reg), cur->offset);
     }
 }
@@ -404,6 +404,10 @@ tac *emit_call(tac *call){
     _mips_iprintf("lw $ra, %d($sp)",(num+1)*4);
     _mips_iprintf("addi $sp, $sp, %d",(num+2)*4);
     num = 0;
+
+    Register x = get_register_w(_tac_quadruple(call).ret);
+    _mips_iprintf("move %s, $v0", _reg_name(x));
+
     return call->next;
 }
 
